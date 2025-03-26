@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.30.0/tabler-icons.min.css">
+    <!-- Yektanet Ad Script -->
+    <script>
+        !function(e,t,n){e.yektanetAnalyticsObject=n,e[n]=e[n]||function(){e[n].q.push(arguments)},e[n].q=e[n].q||[];var a=t.getElementsByTagName("head")[0],r=new Date,c="https://cdn.yektanet.com/superscript/5TWMQZeM/native-skysenseapp.ir-42143/yn_pub.js?v="+r.getFullYear().toString()+"0"+r.getMonth()+"0"+r.getDate()+"0"+r.getHours(),s=t.createElement("link");s.rel="preload",s.as="script",s.href=c,a.appendChild(s);var l=t.createElement("script");l.async=!0,l.src=c,a.appendChild(l)}(window,document,"yektanet");
+    </script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -22,6 +26,16 @@
         }
     </script>
     <style>
+        /* RTL Support */
+        [dir="rtl"] .ml-2 {
+            margin-right: 0.5rem !important;
+            margin-left: 0 !important;
+        }
+        [dir="rtl"] .mr-2 {
+            margin-left: 0.5rem !important;
+            margin-right: 0 !important;
+        }
+        
         .weather-icon {
             font-size: 4rem;
             text-align: center;
@@ -52,6 +66,7 @@
             width: 100%;
             border-radius: 0.5rem;
             z-index: 1; /* Ensure proper z-index for map controls */
+            position: relative;
         }
         .forecast-container {
             overflow-x: auto;
@@ -92,8 +107,8 @@
             background: #333;
         }
         
-        /* Ad container styles */
-        .ad-container {
+        /* Content containers instead of Ad containers to avoid adblockers */
+        .content-promotion {
             background-color: #f9f9f9;
             border-radius: 0.5rem;
             margin: 1rem 0;
@@ -101,47 +116,51 @@
             text-align: center;
             overflow: hidden;
         }
-        .dark .ad-container {
+        .dark .content-promotion {
             background-color: #2d2d2d;
         }
-        .ad-container.horizontal {
+        .content-promotion.horizontal {
             min-height: 90px;
         }
-        .ad-container.square {
+        .content-promotion.square {
             min-height: 250px;
         }
-        .ad-label {
+        .content-label {
             display: block;
             text-align: center;
             font-size: 0.75rem;
             color: #888;
             margin-bottom: 0.25rem;
         }
-        .dark .ad-label {
+        .dark .content-label {
             color: #aaa;
         }
         
-        /* Autocomplete styles */
+        /* Autocomplete styles - Improved */
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
             border-top: none;
-            z-index: 99;
+            z-index: 999;
             top: 100%;
             left: 0;
             right: 0;
             border-radius: 0 0 0.5rem 0.5rem;
-            max-height: 200px;
+            max-height: 300px; /* Increased max height */
             overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         .dark .autocomplete-items {
             border-color: #555;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
         .autocomplete-items div {
-            padding: 10px;
+            padding: 14px 16px; /* Increased padding */
             cursor: pointer;
             background-color: #fff;
             border-bottom: 1px solid #d4d4d4;
+            font-size: 16px; /* Explicit font size */
+            line-height: 1.5;
         }
         .dark .autocomplete-items div {
             background-color: #3d3d3d;
@@ -156,7 +175,7 @@
         }
         .autocomplete-active {
             background-color: #5D5CDE !important; 
-            color: #ffffff; 
+            color: #ffffff !important; 
         }
         
         /* Compass styles */
@@ -265,23 +284,164 @@
         .favorite-animation {
             animation: favorite-animation 0.3s;
         }
+        
+        /* Location button styles */
+        .location-button {
+            position: absolute;
+            bottom: 95px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .location-button:hover {
+            background-color: #f0f0f0;
+        }
+        .dark .location-button {
+            background-color: #3d3d3d;
+            color: white;
+        }
+        .dark .location-button:hover {
+            background-color: #4d4d4d;
+        }
+        
+        /* RTL support for Persian */
+        [dir="rtl"] body {
+            font-family: Tahoma, Arial, sans-serif;
+        }
+        
+        /* Larger more visible language selector */
+        .lang-selector {
+            position: relative;
+            width: auto;
+            cursor: pointer;
+        }
+        .lang-selector-current {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background-color: #f5f5f5;
+            border-radius: 20px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.2s;
+        }
+        .dark .lang-selector-current {
+            background-color: #3d3d3d;
+            color: #fff;
+        }
+        .lang-selector-current:hover {
+            background-color: #e9e9e9;
+        }
+        .dark .lang-selector-current:hover {
+            background-color: #4d4d4d;
+        }
+        .lang-selector-flag {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lang-selector-flag img {
+            width: 20px;
+            height: 20px;
+            object-fit: cover;
+        }
+        .lang-selector-options {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .dark .lang-selector-options {
+            background-color: #3d3d3d;
+        }
+        .lang-selector-options.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .lang-option:hover {
+            background-color: #f5f5f5;
+        }
+        .dark .lang-option:hover {
+            background-color: #4d4d4d;
+        }
+        .lang-option.active {
+            background-color: #f0f0ff;
+        }
+        .dark .lang-option.active {
+            background-color: #4a4a6a;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
     <div class="container mx-auto px-4 py-6 max-w-xl">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">SkySense</h1>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white" data-en="SkySense" data-fa="اسکای‌سنس">SkySense</h1>
             
-            <!-- Unit Toggle -->
-            <div class="flex items-center gap-2">
-                <span class="text-gray-700 dark:text-gray-300">°C</span>
-                <div class="relative inline-block">
-                    <input type="checkbox" id="unit-toggle" class="toggle-checkbox" />
-                    <label for="unit-toggle" class="toggle-label">
-                        <span class="toggle-button"></span>
-                    </label>
+            <div class="flex items-center gap-3">
+                <!-- Language Selector -->
+                <div class="lang-selector" id="lang-selector">
+                    <div class="lang-selector-current">
+                        <div class="lang-selector-flag">
+                            <img src="https://cdn-icons-png.flaticon.com/512/323/323310.png" alt="English" id="current-lang-flag">
+                        </div>
+                        <span id="current-lang-name">EN</span>
+                    </div>
+                    <div class="lang-selector-options" id="lang-options">
+                        <div class="lang-option active" data-lang="en">
+                            <div class="lang-selector-flag">
+                                <img src="https://cdn-icons-png.flaticon.com/512/323/323310.png" alt="English">
+                            </div>
+                            <span>English</span>
+                        </div>
+                        <div class="lang-option" data-lang="fa">
+                            <div class="lang-selector-flag">
+                                <img src="https://cdn-icons-png.flaticon.com/512/321/321246.png" alt="Persian">
+                            </div>
+                            <span>فارسی</span>
+                        </div>
+                    </div>
                 </div>
-                <span class="text-gray-700 dark:text-gray-300">°F</span>
+                
+                <!-- Unit Toggle -->
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-700 dark:text-gray-300" data-en="°C" data-fa="°C">°C</span>
+                    <div class="relative inline-block">
+                        <input type="checkbox" id="unit-toggle" class="toggle-checkbox" />
+                        <label for="unit-toggle" class="toggle-label">
+                            <span class="toggle-button"></span>
+                        </label>
+                    </div>
+                    <span class="text-gray-700 dark:text-gray-300" data-en="°F" data-fa="°F">°F</span>
+                </div>
                 
                 <!-- Settings Button -->
                 <button id="settings-button" class="ml-2 p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
@@ -290,22 +450,15 @@
             </div>
         </div>
         
-        <!-- Top Banner Ad -->
-        <div class="ad-container horizontal">
-            <span class="ad-label">Advertisement</span>
-            <div id="top-banner-ad">
-                <div class="bg-gray-200 dark:bg-gray-700 w-full h-16 flex items-center justify-center">
-                    <span class="text-gray-500 dark:text-gray-400">728×90 Ad Banner</span>
-                </div>
-            </div>
-        </div>
+        <!-- Top Ad Container - Yektanet -->
+        <div id="pos-article-text-105880" class="content-promotion horizontal mb-4"></div>
         
         <!-- Alerts Container -->
         <div id="alerts-container" class="hidden bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 rounded-lg mb-4 pulse-alert">
             <div class="flex items-start">
                 <i class="ti ti-alert-triangle text-yellow-600 dark:text-yellow-400 text-xl mr-2 mt-0.5"></i>
                 <div>
-                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-300" id="alert-title">Weather Alert</h3>
+                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-300" id="alert-title" data-en="Weather Alert" data-fa="هشدار آب و هوا">Weather Alert</h3>
                     <p class="text-yellow-700 dark:text-yellow-200 text-sm" id="alert-message"></p>
                 </div>
             </div>
@@ -315,8 +468,8 @@
         <div id="favorites-container" class="hidden mb-4">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3">
                 <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Favorite Locations</h3>
-                    <button id="manage-favorites" class="text-xs text-primary hover:underline">Manage</button>
+                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300" data-en="Favorite Locations" data-fa="مکان‌های مورد علاقه">Favorite Locations</h3>
+                    <button id="manage-favorites" class="text-xs text-primary hover:underline" data-en="Manage" data-fa="مدیریت">Manage</button>
                 </div>
                 <div id="favorites-list" class="flex flex-wrap gap-2"></div>
             </div>
@@ -324,12 +477,8 @@
         
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
             <div class="flex border-b dark:border-gray-700">
-                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active">
-                    Search Location
-                </button>
-                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium">
-                    Pin on Map
-                </button>
+                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" data-en="Search Location" data-fa="جستجوی مکان">Search Location</button>
+                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه">Pin on Map</button>
             </div>
             
             <div id="searchPanel" class="p-6">
@@ -340,10 +489,11 @@
                                 type="text" 
                                 id="locationInput" 
                                 placeholder="City, mountain, desert, sea coordinates..." 
+                                data-placeholder-en="City, mountain, desert, sea coordinates..."
+                                data-placeholder-fa="شهر، کوه، بیابان، مختصات دریا..."
                                 class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
                                 autocomplete="off"
                                 required
-                                value="New York"
                             >
                             <div class="autocomplete-items hidden" id="autocomplete-list"></div>
                         </div>
@@ -351,25 +501,29 @@
                             type="submit" 
                             class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                         >
-                            <i class="ti ti-search mr-1"></i> Search
+                            <i class="ti ti-search mr-1"></i> <span data-en="Search" data-fa="جستجو">Search</span>
                         </button>
                     </form>
                 </div>
             </div>
             
             <div id="mapPanel" class="hidden p-4">
-                <div id="map" class="mb-4"></div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                <div id="map" class="mb-4">
+                    <!-- Location Button will be added here by JS -->
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3" data-en="Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.)." data-fa="برای دریافت آب و هوای دقیق هر مکان (کوه، بیابان، دریا و غیره) روی نقشه کلیک کنید.">
                     Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.).
                 </p>
                 <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-gray-700 dark:text-gray-300">Selected point:</span>
-                    <span id="selectedLocation" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm text-gray-800 dark:text-white">None selected</span>
+                    <span class="text-gray-700 dark:text-gray-300" data-en="Selected point:" data-fa="نقطه انتخاب شده:">Selected point:</span>
+                    <span id="selectedLocation" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm text-gray-800 dark:text-white" data-en="None selected" data-fa="هیچ نقطه‌ای انتخاب نشده">None selected</span>
                 </div>
                 <button 
                     id="getWeatherForLocation" 
                     class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
                     disabled
+                    data-en="Get Weather"
+                    data-fa="دریافت آب و هوا"
                 >
                     Get Weather
                 </button>
@@ -379,7 +533,8 @@
         <div id="loadingContainer" class="flex justify-center items-center py-10">
             <div class="text-center">
                 <div class="loading-spinner mx-auto mb-4"></div>
-                <p class="text-gray-700 dark:text-gray-300" id="loadingText">Loading weather data...</p>
+                <p class="text-gray-700 dark:text-gray-300" id="loadingText" data-en="Getting your location..." data-fa="در حال دریافت موقعیت شما...">Getting your location...</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="permissionText" data-en="Please allow location access when prompted" data-fa="لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید">Please allow location access when prompted</p>
             </div>
         </div>
 
@@ -404,19 +559,19 @@
                         <p id="weatherDescription" class="text-gray-600 dark:text-gray-300 mb-3 text-center md:text-left"></p>
                         <div class="flex flex-wrap gap-x-6 gap-y-2">
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Temperature:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Temperature:" data-fa="دما:">Temperature:</span>
                                 <span id="temperature" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Feels like:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Feels like:" data-fa="احساس دمایی:">Feels like:</span>
                                 <span id="feelsLike" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Humidity:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Humidity:" data-fa="رطوبت:">Humidity:</span>
                                 <span id="humidity" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium">Wind:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Wind:" data-fa="باد:">Wind:</span>
                                 <span id="wind" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                         </div>
@@ -426,33 +581,33 @@
                 <!-- Expandable Weather Details -->
                 <div class="px-6 pb-4">
                     <button id="details-toggle" class="w-full flex justify-between items-center text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary focus:outline-none transition-colors">
-                        <span class="font-medium">Weather Details</span>
+                        <span class="font-medium" data-en="Weather Details" data-fa="جزئیات آب و هوا">Weather Details</span>
                         <i class="ti ti-chevron-down transition-transform duration-200"></i>
                     </button>
                     
                     <div id="details-content" class="hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">UV Index</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="UV Index" data-fa="شاخص UV">UV Index</p>
                                 <p id="uv-index" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Precipitation</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Precipitation" data-fa="بارش">Precipitation</p>
                                 <p id="precipitation" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Sunrise</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunrise" data-fa="طلوع آفتاب">Sunrise</p>
                                 <p id="sunrise" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Sunset</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunset" data-fa="غروب آفتاب">Sunset</p>
                                 <p id="sunset" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                         </div>
                         
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center">Wind Direction</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Wind Direction" data-fa="جهت باد">Wind Direction</p>
                                 <div id="wind-compass" class="compass">
                                     <div class="compass-face">
                                         <div class="compass-direction">N</div>
@@ -464,9 +619,9 @@
                                 </div>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center">Historical Comparison</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Historical Comparison" data-fa="مقایسه تاریخی">Historical Comparison</p>
                                 <div id="historical-comparison" class="text-center px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <p id="historical-text" class="text-sm text-gray-700 dark:text-gray-300">Loading historical data...</p>
+                                    <p id="historical-text" class="text-sm text-gray-700 dark:text-gray-300" data-en="Loading historical data..." data-fa="در حال بارگذاری داده‌های تاریخی...">Loading historical data...</p>
                                 </div>
                             </div>
                         </div>
@@ -477,17 +632,20 @@
             <!-- Hourly Forecast -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">24-Hour Forecast</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="24-Hour Forecast" data-fa="پیش‌بینی ۲۴ ساعته">24-Hour Forecast</h3>
                 </div>
                 <div class="p-4 forecast-container">
                     <div id="hourlyForecastContent" class="flex gap-3 min-w-full"></div>
                 </div>
             </div>
             
+            <!-- Middle Ad Yektanet -->
+            <div id="pos-article-text-105880" class="content-promotion horizontal mb-4"></div>
+            
             <!-- 7-Day Forecast with Temperature Graph -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">7-Day Forecast</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="7-Day Forecast" data-fa="پیش‌بینی ۷ روزه">7-Day Forecast</h3>
                 </div>
                 
                 <div class="p-4">
@@ -501,29 +659,12 @@
                 </div>
             </div>
             
-            <!-- Middle Ad (Rectangle) -->
-            <div class="ad-container square mx-4">
-                <span class="ad-label">Advertisement</span>
-                <div id="middle-rectangle-ad">
-                    <div class="bg-gray-200 dark:bg-gray-700 w-full h-40 flex items-center justify-center">
-                        <span class="text-gray-500 dark:text-gray-400">300×250 Ad Rectangle</span>
-                    </div>
-                </div>
-            </div>
+            <!-- Bottom Ad Yektanet -->
+            <div id="pos-article-text-105880" class="content-promotion horizontal"></div>
         </div>
         
         <div id="errorContainer" class="hidden bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 p-4 rounded-lg mt-4">
             <p id="errorMessage"></p>
-        </div>
-        
-        <!-- Bottom Banner Ad -->
-        <div class="ad-container horizontal mt-6">
-            <span class="ad-label">Advertisement</span>
-            <div id="bottom-banner-ad">
-                <div class="bg-gray-200 dark:bg-gray-700 w-full h-16 flex items-center justify-center">
-                    <span class="text-gray-500 dark:text-gray-400">728×90 Ad Banner</span>
-                </div>
-            </div>
         </div>
     </div>
     
@@ -532,17 +673,17 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="settings-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Customize Dashboard</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Customize Dashboard" data-fa="شخصی‌سازی داشبورد">Customize Dashboard</h3>
                 <button id="close-settings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
             <div class="p-6">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Select which weather elements to display:</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Select which weather elements to display:" data-fa="انتخاب کنید که کدام عناصر آب و هوا نمایش داده شوند:">Select which weather elements to display:</p>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <label for="show-hourly" class="text-gray-700 dark:text-gray-300">Hourly Forecast</label>
+                        <label for="show-hourly" class="text-gray-700 dark:text-gray-300" data-en="Hourly Forecast" data-fa="پیش‌بینی ساعتی">Hourly Forecast</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-hourly" class="toggle-checkbox" checked />
                             <label for="show-hourly" class="toggle-label">
@@ -551,7 +692,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-details" class="text-gray-700 dark:text-gray-300">Weather Details</label>
+                        <label for="show-details" class="text-gray-700 dark:text-gray-300" data-en="Weather Details" data-fa="جزئیات آب و هوا">Weather Details</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-details" class="toggle-checkbox" checked />
                             <label for="show-details" class="toggle-label">
@@ -560,7 +701,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-chart" class="text-gray-700 dark:text-gray-300">Temperature Chart</label>
+                        <label for="show-chart" class="text-gray-700 dark:text-gray-300" data-en="Temperature Chart" data-fa="نمودار دما">Temperature Chart</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-chart" class="toggle-checkbox" checked />
                             <label for="show-chart" class="toggle-label">
@@ -569,7 +710,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-alerts" class="text-gray-700 dark:text-gray-300">Weather Alerts</label>
+                        <label for="show-alerts" class="text-gray-700 dark:text-gray-300" data-en="Weather Alerts" data-fa="هشدارهای آب و هوا">Weather Alerts</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-alerts" class="toggle-checkbox" checked />
                             <label for="show-alerts" class="toggle-label">
@@ -578,7 +719,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-historical" class="text-gray-700 dark:text-gray-300">Historical Comparison</label>
+                        <label for="show-historical" class="text-gray-700 dark:text-gray-300" data-en="Historical Comparison" data-fa="مقایسه تاریخی">Historical Comparison</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-historical" class="toggle-checkbox" checked />
                             <label for="show-historical" class="toggle-label">
@@ -589,7 +730,7 @@
                 </div>
                 
                 <div class="mt-8 text-right">
-                    <button id="save-settings" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors">
+                    <button id="save-settings" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Save Preferences" data-fa="ذخیره تنظیمات">
                         Save Preferences
                     </button>
                 </div>
@@ -602,16 +743,16 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="share-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Share Weather</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Share Weather" data-fa="اشتراک‌گذاری آب و هوا">Share Weather</h3>
                 <button id="close-share" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
             <div class="p-6">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Share this weather information with others:</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Share this weather information with others:" data-fa="این اطلاعات آب و هوا را با دیگران به اشتراک بگذارید:">Share this weather information with others:</p>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Share Link</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-en="Share Link" data-fa="لینک اشتراک‌گذاری">Share Link</label>
                     <div class="flex">
                         <input type="text" id="share-url" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" readonly>
                         <button id="copy-link" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-opacity-90 transition-colors">
@@ -643,7 +784,7 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="favorites-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Manage Favorites</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Manage Favorites" data-fa="مدیریت علاقه‌مندی‌ها">Manage Favorites</h3>
                 <button id="close-favorites" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
@@ -651,13 +792,13 @@
             <div class="p-6">
                 <div id="no-favorites" class="hidden text-center py-6 text-gray-500 dark:text-gray-400">
                     <i class="ti ti-star text-4xl mb-2"></i>
-                    <p>No favorite locations yet</p>
+                    <p data-en="No favorite locations yet" data-fa="هنوز مکان مورد علاقه‌ای ثبت نشده است">No favorite locations yet</p>
                 </div>
                 
                 <ul id="favorites-management-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
                 
                 <div class="mt-6 text-right">
-                    <button id="done-favorites" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors">
+                    <button id="done-favorites" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Done" data-fa="انجام شد">
                         Done
                     </button>
                 </div>
@@ -767,6 +908,39 @@
             undefined: "Unknown"
         };
 
+        // Persian weather descriptions
+        const weatherDescriptionsFa = {
+            0: "آسمان صاف",
+            1: "عمدتاً صاف",
+            2: "نیمه ابری",
+            3: "ابری",
+            45: "مه",
+            48: "مه سرمازده",
+            51: "نم‌نم باران سبک",
+            53: "نم‌نم باران متوسط",
+            55: "نم‌نم باران شدید",
+            56: "نم‌نم باران یخ‌زده خفیف",
+            57: "نم‌نم باران یخ‌زده شدید",
+            61: "باران سبک",
+            63: "باران متوسط",
+            65: "باران شدید",
+            66: "باران یخ‌زده سبک",
+            67: "باران یخ‌زده شدید",
+            71: "برف سبک",
+            73: "برف متوسط",
+            75: "برف سنگین",
+            77: "دانه‌های برف",
+            80: "بارش‌های سبک باران",
+            81: "بارش‌های متوسط باران",
+            82: "بارش‌های شدید باران",
+            85: "بارش‌های سبک برف",
+            86: "بارش‌های شدید برف",
+            95: "رعد و برق",
+            96: "رعد و برق با تگرگ سبک",
+            99: "رعد و برق با تگرگ شدید",
+            undefined: "نامشخص"
+        };
+
         // Map WMO Weather codes to alert levels
         const weatherAlertLevels = {
             // No alerts
@@ -785,6 +959,7 @@
         const weatherContainer = document.getElementById('weatherContainer');
         const loadingContainer = document.getElementById('loadingContainer');
         const loadingText = document.getElementById('loadingText');
+        const permissionText = document.getElementById('permissionText');
         const errorContainer = document.getElementById('errorContainer');
         const errorMessage = document.getElementById('errorMessage');
         const locationName = document.getElementById('locationName');
@@ -834,6 +1009,10 @@
         const favoritesManagementList = document.getElementById('favorites-management-list');
         const noFavorites = document.getElementById('no-favorites');
         const autocompleteList = document.getElementById('autocomplete-list');
+        const langSelector = document.getElementById('lang-selector');
+        const langOptions = document.getElementById('lang-options');
+        const currentLangName = document.getElementById('current-lang-name');
+        const currentLangFlag = document.getElementById('current-lang-flag');
         
         // Settings elements
         const showHourly = document.getElementById('show-hourly');
@@ -848,6 +1027,7 @@
         // Map variables
         let map = null;
         let marker = null;
+        let locationButton = null;
         let selectedCoords = null;
         
         // Current location data
@@ -857,6 +1037,9 @@
         // Unit preference (default: metric)
         let useMetric = true;
         
+        // Language preference (default: English)
+        let currentLanguage = 'en';
+        
         // User preferences
         const userPreferences = {
             showHourly: true,
@@ -865,6 +1048,7 @@
             showAlerts: true,
             showHistorical: true,
             useMetric: true,
+            language: 'en',
             favorites: []
         };
         
@@ -881,8 +1065,11 @@
             // Apply preferences to UI
             applyUserPreferences();
             
-            // Initialize with default city
-            getWeatherByLocationName("New York");
+            // Set up language selector
+            setupLanguageSelector();
+            
+            // Check for location permission parameters
+            checkLocationPermissionParameters();
         }
         
         // Load user preferences from sessionStorage
@@ -893,6 +1080,7 @@
                     const parsedPrefs = JSON.parse(savedPreferences);
                     Object.assign(userPreferences, parsedPrefs);
                     useMetric = userPreferences.useMetric;
+                    currentLanguage = userPreferences.language || 'en';
                 }
             } catch (err) {
                 console.error("Error loading preferences:", err);
@@ -904,6 +1092,7 @@
         function saveUserPreferences() {
             try {
                 userPreferences.useMetric = useMetric;
+                userPreferences.language = currentLanguage;
                 window.sessionStorage.setItem('skyweatherPrefs', JSON.stringify(userPreferences));
             } catch (err) {
                 console.error("Error saving preferences:", err);
@@ -923,6 +1112,9 @@
             showAlerts.checked = userPreferences.showAlerts;
             showHistorical.checked = userPreferences.showHistorical;
             
+            // Apply language preference
+            setLanguage(userPreferences.language || 'en');
+            
             // Load favorites
             if (userPreferences.favorites && userPreferences.favorites.length > 0) {
                 renderFavorites();
@@ -933,6 +1125,110 @@
             if (currentWeatherData && currentLocationData) {
                 displayWeatherData(currentWeatherData, currentLocationData.displayName);
             }
+        }
+        
+        // Set up language selector
+        function setupLanguageSelector() {
+            // Set current language in selector
+            updateLanguageSelector(currentLanguage);
+            
+            // Set up language selector click handler
+            langSelector.addEventListener('click', function(e) {
+                e.stopPropagation();
+                langOptions.classList.toggle('show');
+            });
+            
+            // Set up language option click handlers
+            document.querySelectorAll('.lang-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const lang = this.getAttribute('data-lang');
+                    setLanguage(lang);
+                    langOptions.classList.remove('show');
+                });
+            });
+            
+            // Close language selector when clicking outside
+            document.addEventListener('click', function() {
+                langOptions.classList.remove('show');
+            });
+        }
+        
+        // Update language selector UI
+        function updateLanguageSelector(lang) {
+            document.querySelectorAll('.lang-option').forEach(option => {
+                if (option.getAttribute('data-lang') === lang) {
+                    option.classList.add('active');
+                    const flagImg = option.querySelector('img').src;
+                    const langName = lang.toUpperCase();
+                    currentLangFlag.src = flagImg;
+                    currentLangName.textContent = langName;
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+        }
+        
+        // Set application language
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            userPreferences.language = lang;
+            saveUserPreferences();
+            
+            // Update language selector
+            updateLanguageSelector(lang);
+            
+            // Set RTL for Persian
+            if (lang === 'fa') {
+                document.body.setAttribute('dir', 'rtl');
+            } else {
+                document.body.setAttribute('dir', 'ltr');
+            }
+            
+            // Update all translatable UI elements
+            document.querySelectorAll('[data-' + lang + ']').forEach(element => {
+                const translation = element.getAttribute('data-' + lang);
+                if (translation) {
+                    element.textContent = translation;
+                }
+            });
+            
+            // Update placeholder for search input
+            const placeholderAttr = 'data-placeholder-' + lang;
+            if (locationInput.hasAttribute(placeholderAttr)) {
+                locationInput.placeholder = locationInput.getAttribute(placeholderAttr);
+            }
+            
+            // Update weather descriptions if weather data is loaded
+            if (currentWeatherData && currentLocationData) {
+                displayWeatherData(currentWeatherData, currentLocationData.displayName);
+            }
+        }
+        
+        // Check URL parameters for location permission
+        function checkLocationPermissionParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check if loading with location permission
+            if (urlParams.has('useLocation') && urlParams.get('useLocation') === 'true') {
+                getUserLocation();
+                return;
+            }
+            
+            // Check for other parameters
+            if (urlParams.has('lat') && urlParams.has('lon')) {
+                const lat = parseFloat(urlParams.get('lat'));
+                const lon = parseFloat(urlParams.get('lon'));
+                getWeatherByCoordinates(lat, lon);
+                return;
+            } else if (urlParams.has('loc')) {
+                const loc = urlParams.get('loc');
+                getWeatherByLocationName(loc);
+                return;
+            }
+            
+            // Start with permission request for location
+            getUserLocation();
         }
         
         // Set up event listeners
@@ -1004,7 +1300,9 @@
             const location = locationInput.value.trim();
             
             if (!location) {
-                showError("Please enter a location");
+                showError(currentLanguage === 'en' ? 
+                    "Please enter a location" : 
+                    "لطفاً یک مکان وارد کنید");
                 return;
             }
             
@@ -1136,6 +1434,9 @@
                     getWeatherForLocation.disabled = false;
                 });
                 
+                // Add a location button to the map
+                addLocationButton();
+                
                 // If we have user coordinates, center the map there
                 if (window.userCoordinates) {
                     const { latitude, longitude } = window.userCoordinates;
@@ -1162,10 +1463,134 @@
                 const mapErrorMessage = document.createElement('div');
                 mapErrorMessage.innerHTML = `
                     <div class="p-4 text-center text-red-500">
-                        <p>Could not initialize map. Please try refreshing the page.</p>
+                        <p>${currentLanguage === 'en' ? 
+                          "Could not initialize map. Please try refreshing the page." : 
+                          "نقشه راه‌اندازی نشد. لطفا صفحه را رفرش کنید."}</p>
                     </div>
                 `;
                 document.getElementById('map').appendChild(mapErrorMessage);
+            }
+        }
+        
+        // Add location button to map
+        function addLocationButton() {
+            if (!map || locationButton) return;
+            
+            locationButton = document.createElement('div');
+            locationButton.className = 'location-button';
+            locationButton.innerHTML = '<i class="ti ti-current-location"></i>';
+            locationButton.title = currentLanguage === 'en' ? 
+                'Go to my location' : 
+                'برو به موقعیت من';
+            
+            locationButton.addEventListener('click', function() {
+                getUserLocation(true);
+            });
+            
+            document.getElementById('map').appendChild(locationButton);
+        }
+        
+        // Get user's location
+        function getUserLocation(fromMapButton = false) {
+            if ('geolocation' in navigator) {
+                const loadingMsg = currentLanguage === 'en' ? 
+                    'Getting your location...' : 
+                    'در حال دریافت موقعیت شما...';
+                
+                const permissionMsg = currentLanguage === 'en' ? 
+                    'Please allow location access when prompted' : 
+                    'لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید';
+                
+                if (!fromMapButton) {
+                    showLoading(loadingMsg);
+                    permissionText.textContent = permissionMsg;
+                    permissionText.style.display = 'block';
+                }
+                
+                // Set a longer timeout for geolocation (30 seconds)
+                const geolocationTimeout = setTimeout(() => {
+                    console.log("Geolocation timed out, using default location");
+                    if (!fromMapButton) {
+                        hideLoading();
+                        getWeatherByLocationName('New York'); // Fallback to a default city
+                    }
+                }, 30000); // 30 seconds timeout
+                
+                try {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            clearTimeout(geolocationTimeout);
+                            const { latitude, longitude } = position.coords;
+                            
+                            // Save coordinates for later use
+                            window.userCoordinates = { latitude, longitude };
+                            
+                            if (fromMapButton && map) {
+                                map.setView([latitude, longitude], 13);
+                                if (marker) {
+                                    marker.setLatLng([latitude, longitude]);
+                                } else {
+                                    marker = L.marker([latitude, longitude]).addTo(map);
+                                }
+                                selectedCoords = { lat: latitude, lng: longitude };
+                                selectedLocation.textContent = `${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`;
+                                getWeatherForLocation.disabled = false;
+                            } else {
+                                getWeatherByCoordinates(latitude, longitude, currentLanguage === 'en' ? 'Your Current Location' : 'موقعیت فعلی شما');
+                            }
+                        }, 
+                        error => {
+                            clearTimeout(geolocationTimeout);
+                            console.error("Geolocation error:", error);
+                            
+                            if (!fromMapButton) {
+                                hideLoading();
+                                // Show error message based on the error code
+                                switch(error.code) {
+                                    case error.PERMISSION_DENIED:
+                                        showError(currentLanguage === 'en' ? 
+                                            "Location access denied. Please search for a location instead." : 
+                                            "دسترسی به موقعیت رد شد. لطفاً به جای آن یک مکان را جستجو کنید.");
+                                        break;
+                                    case error.POSITION_UNAVAILABLE:
+                                        showError(currentLanguage === 'en' ? 
+                                            "Location information is unavailable. Please search for a location." : 
+                                            "اطلاعات موقعیت در دسترس نیست. لطفاً یک مکان را جستجو کنید.");
+                                        break;
+                                    case error.TIMEOUT:
+                                        showError(currentLanguage === 'en' ? 
+                                            "Location request timed out. Please search for a location." : 
+                                            "درخواست موقعیت به پایان رسید. لطفاً یک مکان را جستجو کنید.");
+                                        break;
+                                    default:
+                                        showError(currentLanguage === 'en' ? 
+                                            "An unknown error occurred. Please search for a location." : 
+                                            "خطای ناشناخته رخ داد. لطفاً یک مکان را جستجو کنید.");
+                                }
+                            }
+                        },
+                        { 
+                            enableHighAccuracy: false, 
+                            timeout: 25000,  // 25 seconds timeout (shorter than the overall timeout)
+                            maximumAge: 60000 // Accept positions up to 1 minute old
+                        }
+                    );
+                } catch (e) {
+                    clearTimeout(geolocationTimeout);
+                    console.error("Exception in geolocation:", e);
+                    if (!fromMapButton) {
+                        hideLoading();
+                        getWeatherByLocationName('New York'); // Fallback to a default city
+                    }
+                }
+            } else {
+                console.log("Geolocation not supported");
+                if (!fromMapButton) {
+                    hideLoading();
+                    showError(currentLanguage === 'en' ? 
+                        "Your browser doesn't support geolocation. Please search for a location." : 
+                        "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند. لطفاً یک مکان را جستجو کنید.");
+                }
             }
         }
         
@@ -1181,10 +1606,18 @@
         // Format date string from ISO date
         function formatDate(dateString) {
             const date = new Date(dateString);
-            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             
-            return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+            if (currentLanguage === 'fa') {
+                // Simple Persian date format (not fully accurate but sufficient for this app)
+                const days = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+                const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+                // Note: This is a simplified conversion, not accurate for all dates
+                return `${days[date.getDay()]}، ${date.getDate()} ${months[date.getMonth()]}`;
+            } else {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+            }
         }
         
         // Format time from ISO date or hour string
@@ -1201,7 +1634,10 @@
                 return timeString;
             }
             
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleTimeString(currentLanguage === 'fa' ? 'fa-IR' : [], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
         }
 
         // Convert wind speed and direction to human-readable format
@@ -1210,14 +1646,17 @@
             
             if (useMetric) {
                 // Converting m/s to km/h
-                formattedSpeed = `${Math.round(speed * 3.6)} km/h`;
+                formattedSpeed = `${Math.round(speed * 3.6)} ${currentLanguage === 'en' ? 'km/h' : 'کیلومتر/ساعت'}`;
             } else {
                 // Converting m/s to mph
-                formattedSpeed = `${Math.round(speed * 2.237)} mph`;
+                formattedSpeed = `${Math.round(speed * 2.237)} ${currentLanguage === 'en' ? 'mph' : 'مایل/ساعت'}`;
             }
             
             // Get cardinal direction
-            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            const directions = currentLanguage === 'en' ? 
+                ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : 
+                ['شمال', 'شمال‌شرق', 'شرق', 'جنوب‌شرق', 'جنوب', 'جنوب‌غرب', 'غرب', 'شمال‌غرب'];
+            
             const index = Math.round(direction / 45) % 8;
             
             return `${formattedSpeed} ${directions[index]}`;
@@ -1247,7 +1686,7 @@
                         labels: labels,
                         datasets: [
                             {
-                                label: 'Max Temp',
+                                label: currentLanguage === 'en' ? 'Max Temp' : 'دمای حداکثر',
                                 data: maxTemps,
                                 borderColor: '#FF6B6B',
                                 backgroundColor: 'rgba(255, 107, 107, 0.1)',
@@ -1258,7 +1697,7 @@
                                 pointHoverRadius: 6
                             },
                             {
-                                label: 'Min Temp',
+                                label: currentLanguage === 'en' ? 'Min Temp' : 'دمای حداقل',
                                 data: minTemps,
                                 borderColor: '#4ECDC4',
                                 backgroundColor: 'rgba(78, 205, 196, 0.1)',
@@ -1329,7 +1768,7 @@
             // Set a timeout to allow user to finish typing
             autocompleteTimeout = setTimeout(async () => {
                 try {
-                    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5`);
+                    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=${currentLanguage}`);
                     const data = await response.json();
                     
                     if (!data.results || data.results.length === 0) {
@@ -1425,18 +1864,28 @@
             
             if (alertLevel >= 2 || hasPrecipitation || highWinds) {
                 // Create alert message
-                let alertText = weatherDescriptions[currentWeatherCode];
+                let alertText = currentLanguage === 'en' ? 
+                    weatherDescriptions[currentWeatherCode] : 
+                    weatherDescriptionsFa[currentWeatherCode];
                 
                 if (hasPrecipitation) {
-                    alertText += ` | Heavy precipitation expected (${data.daily.precipitation_sum[0]}mm)`;
+                    if (currentLanguage === 'en') {
+                        alertText += ` | Heavy precipitation expected (${data.daily.precipitation_sum[0]}mm)`;
+                    } else {
+                        alertText += ` | بارش شدید پیش‌بینی می‌شود (${data.daily.precipitation_sum[0]} میلی‌متر)`;
+                    }
                 }
                 
                 if (highWinds) {
-                    alertText += ` | Strong winds (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m)})`;
+                    if (currentLanguage === 'en') {
+                        alertText += ` | Strong winds (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m)})`;
+                    } else {
+                        alertText += ` | بادهای شدید (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m)})`;
+                    }
                 }
                 
                 // Display alert
-                alertTitle.textContent = "Weather Alert";
+                alertTitle.textContent = currentLanguage === 'en' ? "Weather Alert" : "هشدار آب و هوا";
                 alertMessage.textContent = alertText;
                 alertsContainer.classList.remove('hidden');
             } else {
@@ -1460,7 +1909,15 @@
             shareUrl.value = shareUrlText;
             
             // Set up social sharing links
-            const weatherText = encodeURIComponent(`Check out the weather in ${currentLocationData.displayName}: ${weatherDescriptions[currentWeatherData.current.weather_code]}, ${temperature.textContent}`);
+            const weatherDesc = currentLanguage === 'en' ? 
+                weatherDescriptions[currentWeatherData.current.weather_code] : 
+                weatherDescriptionsFa[currentWeatherData.current.weather_code];
+            
+            const shareTitle = currentLanguage === 'en' ? 
+                `Check out the weather in ${currentLocationData.displayName}` : 
+                `آب و هوا در ${currentLocationData.displayName} را ببینید`;
+            
+            const weatherText = encodeURIComponent(`${shareTitle}: ${weatherDesc}, ${temperature.textContent}`);
             
             shareTwitter.href = `https://twitter.com/intent/tweet?text=${weatherText}&url=${encodeURIComponent(shareUrlText)}`;
             shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrlText)}`;
@@ -1640,7 +2097,9 @@
                 
                 // Display current weather
                 locationName.textContent = locationNameStr;
-                weatherDescription.textContent = weatherDescriptions[current.weatherCode];
+                weatherDescription.textContent = currentLanguage === 'en' ? 
+                    weatherDescriptions[current.weatherCode] : 
+                    weatherDescriptionsFa[current.weatherCode];
                 weatherIconContainer.textContent = weatherIcons[current.weatherCode];
                 temperature.textContent = current.temperature;
                 feelsLike.textContent = current.feelsLike;
@@ -1676,12 +2135,22 @@
                 const absDiff = Math.abs(diff);
                 
                 let comparisonText;
-                if (absDiff < 2) {
-                    comparisonText = `Current temperature is about average for this time of year.`;
-                } else if (diff > 0) {
-                    comparisonText = `${formatTemperature(absDiff)} warmer than the historical average for this time.`;
+                if (currentLanguage === 'en') {
+                    if (absDiff < 2) {
+                        comparisonText = `Current temperature is about average for this time of year.`;
+                    } else if (diff > 0) {
+                        comparisonText = `${formatTemperature(absDiff)} warmer than the historical average for this time.`;
+                    } else {
+                        comparisonText = `${formatTemperature(absDiff)} cooler than the historical average for this time.`;
+                    }
                 } else {
-                    comparisonText = `${formatTemperature(absDiff)} cooler than the historical average for this time.`;
+                    if (absDiff < 2) {
+                        comparisonText = `دمای فعلی تقریباً متوسط برای این زمان از سال است.`;
+                    } else if (diff > 0) {
+                        comparisonText = `${formatTemperature(absDiff)} گرم‌تر از میانگین تاریخی برای این زمان.`;
+                    } else {
+                        comparisonText = `${formatTemperature(absDiff)} سردتر از میانگین تاریخی برای این زمان.`;
+                    }
                 }
                 
                 document.getElementById('historical-text').textContent = comparisonText;
@@ -1738,12 +2207,17 @@
                         
                         const dayElement = document.createElement('div');
                         dayElement.className = 'flex-shrink-0 w-28 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-center';
+                        
+                        const precipText = currentLanguage === 'en' ? 
+                            (day.precipitation > 0 ? day.precipitation + ' mm' : 'No rain') : 
+                            (day.precipitation > 0 ? day.precipitation + ' میلی‌متر' : 'بدون بارش');
+                        
                         dayElement.innerHTML = `
                             <div class="font-medium text-gray-800 dark:text-white mb-1 truncate">${day.date}</div>
                             <div class="text-2xl mb-1">${weatherIcons[day.weatherCode]}</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-300 truncate">${weatherDescriptions[day.weatherCode]}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300 truncate">${currentLanguage === 'en' ? weatherDescriptions[day.weatherCode] : weatherDescriptionsFa[day.weatherCode]}</div>
                             <div class="text-sm text-gray-800 dark:text-white mt-1">${formatTemperature(day.maxTemp)} / ${formatTemperature(day.minTemp)}</div>
-                            <div class="text-xs text-blue-500 mt-1">${day.precipitation > 0 ? day.precipitation + ' mm' : 'No rain'}</div>
+                            <div class="text-xs text-blue-500 mt-1">${precipText}</div>
                         `;
                         forecastContent.appendChild(dayElement);
                     }
@@ -1761,7 +2235,9 @@
                 updateUIBasedOnPreferences();
             } catch (err) {
                 console.error("Error displaying weather data:", err);
-                showError("Failed to display weather data. Please try again.");
+                showError(currentLanguage === 'en' ? 
+                    "Failed to display weather data. Please try again." : 
+                    "نمایش اطلاعات آب و هوا با شکست مواجه شد. لطفا دوباره تلاش کنید.");
             }
         }
 
@@ -1776,6 +2252,7 @@
         // Hide loading indicator
         function hideLoading() {
             loadingContainer.classList.add('hidden');
+            permissionText.style.display = 'none';
         }
 
         // Show error message
@@ -1790,11 +2267,13 @@
         async function getCoordinates(locationName) {
             try {
                 console.log("Getting coordinates for:", locationName);
-                const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1`);
+                const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1&language=${currentLanguage}`);
                 const data = await response.json();
                 
                 if (!data.results || data.results.length === 0) {
-                    throw new Error("Location not found");
+                    throw new Error(currentLanguage === 'en' ? 
+                        "Location not found" : 
+                        "مکان یافت نشد");
                 }
                 
                 const location = data.results[0];
@@ -1807,7 +2286,9 @@
                 };
             } catch (err) {
                 console.error("Geocoding error:", err);
-                throw new Error("Could not find coordinates for this location");
+                throw new Error(currentLanguage === 'en' ? 
+                    "Could not find coordinates for this location" : 
+                    "نمی‌توان مختصات این مکان را پیدا کرد");
             }
         }
 
@@ -1820,19 +2301,27 @@
                 const response = await fetch(url);
                 
                 if (!response.ok) {
-                    throw new Error(`Weather API error: ${response.status}`);
+                    throw new Error(currentLanguage === 'en' ? 
+                        `Weather API error: ${response.status}` : 
+                        `خطای API آب و هوا: ${response.status}`);
                 }
                 
                 return await response.json();
             } catch (err) {
                 console.error("Weather API error:", err);
-                throw new Error("Could not fetch weather data");
+                throw new Error(currentLanguage === 'en' ? 
+                    "Could not fetch weather data" : 
+                    "نمی‌توان داده‌های آب و هوا را دریافت کرد");
             }
         }
 
         // Get weather for a location (by name)
         async function getWeatherByLocationName(locationName) {
-            showLoading("Finding location...");
+            const loadingMsg = currentLanguage === 'en' ? 
+                "Finding location..." : 
+                "در حال یافتن مکان...";
+            
+            showLoading(loadingMsg);
             
             try {
                 // Get coordinates from location name
@@ -1841,7 +2330,11 @@
                 // Save current location data
                 currentLocationData = locationData;
                 
-                showLoading("Getting weather data...");
+                const weatherLoadingMsg = currentLanguage === 'en' ? 
+                    "Getting weather data..." : 
+                    "در حال دریافت داده‌های آب و هوا...";
+                
+                showLoading(weatherLoadingMsg);
                 
                 // Get weather data
                 const weatherData = await fetchWeatherData(
@@ -1870,7 +2363,11 @@
 
         // Get weather for coordinates
         async function getWeatherByCoordinates(latitude, longitude, displayName) {
-            showLoading("Getting weather data...");
+            const loadingMsg = currentLanguage === 'en' ? 
+                "Getting weather data..." : 
+                "در حال دریافت داده‌های آب و هوا...";
+            
+            showLoading(loadingMsg);
             
             try {
                 // Save current location data
