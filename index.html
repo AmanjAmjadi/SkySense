@@ -136,10 +136,21 @@
             color: #aaa;
         }
         
-        /* Fixed autocomplete dropdown - completely repositioned */
-        #autocomplete-container {
+        /* Fixed autocomplete dropdown - with absolute positioning */
+        #autocompleteContainer {
             position: relative;
-            width: 100%;
+        }
+        
+        /* IMPORTANT: Fixed search panel height to show dropdown */
+        #searchPanel {
+            position: relative;
+            min-height: 200px; /* Increased to ensure dropdown visibility */
+            z-index: 10;
+        }
+        
+        /* Make container non-overflowing for dropdown */
+        .search-container {
+            overflow: visible !important;
         }
         
         #autocomplete-list {
@@ -151,7 +162,6 @@
             overflow-y: auto;
             background-color: white;
             border: 1px solid #ddd;
-            border-top: none;
             border-radius: 0 0 8px 8px;
             z-index: 1000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -576,13 +586,15 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
+        <!-- Search and Map Container - FIXED: Made search-container class and removed overflow-hidden -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg search-container mb-6">
             <div class="flex border-b dark:border-gray-700">
                 <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" data-en="Search Location" data-fa="جستجوی مکان">Search Location</button>
                 <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه">Pin on Map</button>
             </div>
             
-            <div id="searchPanel" class="p-6">
+            <!-- FIXED: Added padding-bottom to ensure dropdown visibility -->
+            <div id="searchPanel" class="p-6 pb-24">
                 <div id="autocompleteContainer">
                     <form id="weatherForm" class="flex flex-col md:flex-row gap-2">
                         <div class="flex-1 relative">
@@ -763,7 +775,8 @@
                 </div>
             </div>
             
-            <!-- Yektanet will auto-place the bottom ad -->
+            <!-- Bottom Ad Yektanet -->
+            <div id="pos-article-display-card-105911" class="content-promotion horizontal"></div>
         </div>
         
         <div id="errorContainer" class="hidden bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 p-4 rounded-lg mt-4">
