@@ -302,6 +302,61 @@
             animation: pulse 2s infinite;
         }
         
+        /* IMPROVED: Weather alerts styling */
+        .alert-severity-1 {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+        .dark .alert-severity-1 {
+            background-color: #755e11;
+            border-color: #876c15;
+            color: #ffe69c;
+        }
+        
+        .alert-severity-2 {
+            background-color: #ffeaee;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .dark .alert-severity-2 {
+            background-color: #7d282f;
+            border-color: #922d35;
+            color: #f8d7da;
+        }
+        
+        .alert-severity-3 {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .dark .alert-severity-3 {
+            background-color: #6b1a21;
+            border-color: #ae2230;
+            color: #f5c6cb;
+        }
+        
+        .alert-action-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .alert-dismiss {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            color: inherit;
+            opacity: 0.6;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .alert-dismiss:hover {
+            opacity: 1;
+        }
+        
         /* Favorite button animation */
         @keyframes favorite-animation {
             0% { transform: scale(1); }
@@ -564,13 +619,19 @@
             </div>
         </div>
         
-        <!-- Alerts Container -->
-        <div id="alerts-container" class="hidden bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 rounded-lg mb-4 pulse-alert">
+        <!-- Weather Alerts Container (IMPROVED) -->
+        <div id="alerts-container" class="hidden relative border-l-4 p-4 rounded-lg mb-4 pulse-alert">
+            <button id="dismiss-alert" class="alert-dismiss">
+                <i class="ti ti-x"></i>
+            </button>
             <div class="flex items-start">
-                <i class="ti ti-alert-triangle text-yellow-600 dark:text-yellow-400 text-xl mr-2 mt-0.5"></i>
+                <i id="alert-icon" class="text-xl mr-2 mt-0.5"></i>
                 <div>
-                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-300" id="alert-title" data-en="Weather Alert" data-fa="هشدار آب و هوا">Weather Alert</h3>
-                    <p class="text-yellow-700 dark:text-yellow-200 text-sm" id="alert-message"></p>
+                    <h3 class="font-semibold" id="alert-title" data-en="Weather Alert" data-fa="هشدار آب و هوا">Weather Alert</h3>
+                    <p class="text-sm" id="alert-message"></p>
+                    
+                    <!-- Alert actions/recommendations -->
+                    <div id="alert-actions" class="mt-2 text-sm"></div>
                 </div>
             </div>
         </div>
@@ -1080,16 +1141,81 @@
             undefined: "نامشخص"
         };
 
-        // Map WMO Weather codes to alert levels
-        const weatherAlertLevels = {
-            // No alerts
-            0: 0, 1: 0, 2: 0, 3: 0, 45: 0, 48: 0, 
-            // Light alerts
-            51: 1, 53: 1, 56: 1, 61: 1, 71: 1, 80: 1, 85: 1,
-            // Moderate alerts
-            55: 2, 57: 2, 63: 2, 66: 2, 73: 2, 81: 2, 86: 2,
-            // Severe alerts
-            65: 3, 67: 3, 75: 3, 77: 3, 82: 3, 95: 3, 96: 3, 99: 3
+        // IMPROVED: More detailed weather alert information with recommendations
+        const weatherAlertInfo = {
+            // Rain alerts
+            51: { severity: 1, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully"] },
+            53: { severity: 1, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully"] },
+            55: { severity: 2, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully", "flood_risk"] },
+            
+            // Freezing rain alerts
+            56: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully", "ice_risk"] },
+            57: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully", "ice_risk"] },
+            
+            // Rain alerts
+            61: { severity: 1, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully"] },
+            63: { severity: 2, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully", "flood_risk"] },
+            65: { severity: 3, icon: "ti ti-cloud-rain", actions: ["stay_indoors", "flood_risk", "avoid_rivers"] },
+            
+            // Freezing Rain
+            66: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully", "ice_risk"] },
+            67: { severity: 3, icon: "ti ti-snowflake", actions: ["stay_indoors", "avoid_travel", "ice_risk"] },
+            
+            // Snow
+            71: { severity: 1, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully"] },
+            73: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully", "check_heating"] },
+            75: { severity: 3, icon: "ti ti-snowflake", actions: ["stay_indoors", "avoid_travel", "check_heating", "snow_risk"] },
+            77: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully"] },
+            
+            // Rain Showers
+            80: { severity: 1, icon: "ti ti-cloud-rain", actions: ["carry_umbrella"] },
+            81: { severity: 2, icon: "ti ti-cloud-rain", actions: ["carry_umbrella", "drive_carefully"] },
+            82: { severity: 3, icon: "ti ti-cloud-rain", actions: ["stay_indoors", "avoid_travel", "flood_risk"] },
+            
+            // Snow Showers
+            85: { severity: 1, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully"] },
+            86: { severity: 2, icon: "ti ti-snowflake", actions: ["dress_warmly", "drive_carefully", "check_heating"] },
+            
+            // Thunderstorm
+            95: { severity: 3, icon: "ti ti-bolt", actions: ["stay_indoors", "unplug_electronics", "avoid_trees"] },
+            96: { severity: 3, icon: "ti ti-bolt", actions: ["stay_indoors", "unplug_electronics", "avoid_trees", "hail_risk"] },
+            99: { severity: 3, icon: "ti ti-bolt", actions: ["stay_indoors", "unplug_electronics", "avoid_trees", "hail_risk"] }
+        };
+        
+        // Weather alert action recommendations
+        const weatherAlertActions = {
+            // English actions
+            en: {
+                carry_umbrella: { icon: "ti ti-umbrella", text: "Carry an umbrella" },
+                drive_carefully: { icon: "ti ti-car", text: "Drive with caution" },
+                dress_warmly: { icon: "ti ti-shirt", text: "Dress warmly in layers" },
+                stay_indoors: { icon: "ti ti-home", text: "Stay indoors if possible" },
+                avoid_travel: { icon: "ti ti-map", text: "Avoid unnecessary travel" },
+                unplug_electronics: { icon: "ti ti-plug", text: "Unplug sensitive electronics" },
+                avoid_trees: { icon: "ti ti-tree", text: "Avoid trees and open areas" },
+                check_heating: { icon: "ti ti-temperature", text: "Check heating systems" },
+                flood_risk: { icon: "ti ti-waves", text: "Be aware of flooding risks" },
+                ice_risk: { icon: "ti ti-ice-skating", text: "Watch for icy surfaces" },
+                snow_risk: { icon: "ti ti-snowflake", text: "Heavy snow may block roads" },
+                hail_risk: { icon: "ti ti-ball-baseball", text: "Take cover from hail" },
+                avoid_rivers: { icon: "ti ti-droplet", text: "Avoid rivers and streams" }
+            },
+            // Persian actions
+            fa: {
+                carry_umbrella: { icon: "ti ti-umbrella", text: "چتر همراه داشته باشید" },
+                drive_carefully: { icon: "ti ti-car", text: "با احتیاط رانندگی کنید" },
+                dress_warmly: { icon: "ti ti-shirt", text: "لباس گرم و لایه‌ای بپوشید" },
+                stay_indoors: { icon: "ti ti-home", text: "در صورت امکان در خانه بمانید" },
+                avoid_travel: { icon: "ti ti-map", text: "از سفرهای غیرضروری خودداری کنید" },
+                unplug_electronics: { icon: "ti ti-plug", text: "وسایل الکترونیکی حساس را از برق بکشید" },
+                avoid_trees: { icon: "ti ti-tree", text: "از درختان و فضاهای باز دوری کنید" },
+                check_heating: { icon: "ti ti-temperature", text: "سیستم‌های گرمایشی را بررسی کنید" },
+                flood_risk: { icon: "ti ti-waves", text: "مراقب خطر سیل باشید" },
+                ice_risk: { icon: "ti ti-ice-skating", text: "مراقب سطوح یخ‌زده باشید" },
+                snow_risk: { icon: "ti ti-snowflake", text: "برف سنگین ممکن است جاده‌ها را مسدود کند" },
+                hail_risk: { icon: "ti ti-ball-baseball", text: "از تگرگ پناه بگیرید" },
+                avoid_rivers: { icon: "ti ti-droplet", text: "از رودخانه‌ها و جویبارها دوری کنید" }
+            }
         };
 
         // DOM Elements
@@ -1120,6 +1246,9 @@
         const alertsContainer = document.getElementById('alerts-container');
         const alertTitle = document.getElementById('alert-title');
         const alertMessage = document.getElementById('alert-message');
+        const alertIcon = document.getElementById('alert-icon');
+        const alertActions = document.getElementById('alert-actions');
+        const dismissAlert = document.getElementById('dismiss-alert');
         const detailsToggle = document.getElementById('details-toggle');
         const detailsContent = document.getElementById('details-content');
         const settingsButton = document.getElementById('settings-button');
@@ -1196,8 +1325,12 @@
             useMetric: true,
             language: 'en',
             favorites: [],
-            customLocationNames: {} // Store custom location names
+            customLocationNames: {}, // Store custom location names
+            dismissedAlerts: [] // Track dismissed alerts
         };
+        
+        // FIXED: API Fallback Detection
+        let isIranianIP = false;
         
         // Initialize application
         function initApp() {
@@ -1215,8 +1348,33 @@
             // Set up language selector
             setupLanguageSelector();
             
+            // IMPROVED: Detect if user is in Iran by checking connection to OpenWeatherMap
+            // This helps us determine which API to use
+            checkRegion();
+            
             // Check for location permission parameters
             checkLocationPermissionParameters();
+        }
+        
+        // IMPROVED: Check if user is in a region with API restrictions
+        async function checkRegion() {
+            try {
+                // Try accessing OpenWeatherMap with a short timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
+                
+                await fetch('https://api.openweathermap.org/data/2.5/weather?lat=35.7&lon=51.4&appid=4d8fb5b93d4af21d66a2948710284366', {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                isIranianIP = false;
+                console.log("Using OpenWeatherMap API");
+            } catch (error) {
+                // If it fails, likely due to network restrictions, use Open-Meteo first
+                isIranianIP = true;
+                console.log("Using Open-Meteo API as primary");
+            }
         }
         
         // Load user preferences from sessionStorage
@@ -1232,6 +1390,11 @@
                     // Initialize custom location names if needed
                     if (!userPreferences.customLocationNames) {
                         userPreferences.customLocationNames = {};
+                    }
+                    
+                    // Initialize dismissed alerts if needed
+                    if (!userPreferences.dismissedAlerts) {
+                        userPreferences.dismissedAlerts = [];
                     }
                 }
             } catch (err) {
@@ -1516,6 +1679,9 @@
             // Details toggle
             detailsToggle.addEventListener('click', toggleDetails);
             
+            // IMPROVED: Alert dismiss button
+            dismissAlert.addEventListener('click', dismissWeatherAlert);
+            
             // Settings modal
             settingsButton.addEventListener('click', () => settingsModal.classList.remove('hidden'));
             if (settingsBackdrop) {
@@ -1565,6 +1731,22 @@
                     autocompleteList.classList.remove('show');
                 }
             });
+        }
+        
+        // IMPROVED: Dismiss weather alert
+        function dismissWeatherAlert() {
+            if (!currentWeatherData || !currentWeatherData.current) return;
+            
+            // Add current weather code to dismissed alerts
+            const weatherCode = currentWeatherData.current.weather_code;
+            
+            if (!userPreferences.dismissedAlerts.includes(weatherCode)) {
+                userPreferences.dismissedAlerts.push(weatherCode);
+                saveUserPreferences();
+            }
+            
+            // Hide alert
+            alertsContainer.classList.add('hidden');
         }
         
         // Handle weather form submission
@@ -2182,7 +2364,7 @@
             }
         }
         
-        // Handle location autocomplete
+        // IMPROVED: Handle location autocomplete with fallback between APIs
         let autocompleteTimeout;
         async function handleLocationInput() {
             const query = locationInput.value.trim();
@@ -2201,24 +2383,74 @@
                 try {
                     console.log("Fetching autocomplete for:", query);
                     
-                    // FIXED: Use a proper API to get location suggestions
-                    const response = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=4d8fb5b93d4af21d66a2948710284366`);
-                    const data = await response.json();
+                    let results = [];
                     
-                    if (!data || data.length === 0) {
+                    // Try Open-Meteo first for Iranian users
+                    if (isIranianIP) {
+                        try {
+                            const response = await fetchWithTimeout(
+                                `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=${currentLanguage}`,
+                                { timeout: 3000 }
+                            );
+                            const data = await response.json();
+                            if (data.results && data.results.length > 0) {
+                                results = data.results.map(item => ({
+                                    name: item.name,
+                                    country: item.country,
+                                    state: item.admin1
+                                }));
+                            }
+                        } catch (error) {
+                            console.log("Open-Meteo autocomplete failed, trying OpenWeatherMap");
+                        }
+                    }
+                    
+                    // If no results yet or not in Iran, try OpenWeatherMap
+                    if (results.length === 0) {
+                        try {
+                            const response = await fetchWithTimeout(
+                                `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=4d8fb5b93d4af21d66a2948710284366`,
+                                { timeout: 3000 }
+                            );
+                            const data = await response.json();
+                            if (data && data.length > 0) {
+                                results = data;
+                            }
+                        } catch (error) {
+                            console.error("OpenWeatherMap autocomplete failed");
+                            // If in Iran and both APIs failed, show error
+                            if (isIranianIP) {
+                                throw new Error("All geocoding APIs failed");
+                            }
+                        }
+                    }
+                    
+                    if (results.length === 0) {
                         autocompleteList.innerHTML = '';
                         autocompleteList.classList.remove('show');
                         return;
                     }
                     
                     // Display results
-                    renderAutocompleteResults(data);
+                    renderAutocompleteResults(results);
                 } catch (err) {
                     console.error("Autocomplete error:", err);
                     autocompleteList.innerHTML = '';
                     autocompleteList.classList.remove('show');
                 }
             }, 300);
+        }
+        
+        // IMPROVED: Fetch with timeout for faster error handling
+        function fetchWithTimeout(url, options = {}) {
+            const { timeout = 5000 } = options;
+            
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timed out')), timeout)
+                )
+            ]);
         }
         
         // Render autocomplete results - FIXED
@@ -2296,7 +2528,7 @@
             }
         }
         
-        // Check weather conditions for alerts
+        // IMPROVED: Check weather conditions for alerts with more detailed information
         function checkWeatherAlerts(data) {
             if (!userPreferences.showAlerts) {
                 alertsContainer.classList.add('hidden');
@@ -2305,7 +2537,15 @@
             
             // Check current weather code for severe conditions
             const currentWeatherCode = data.current.weather_code;
-            const alertLevel = weatherAlertLevels[currentWeatherCode] || 0;
+            
+            // Check if this alert has been dismissed
+            if (userPreferences.dismissedAlerts.includes(currentWeatherCode)) {
+                alertsContainer.classList.add('hidden');
+                return;
+            }
+            
+            // Get alert info for this weather code
+            const alertInfo = weatherAlertInfo[currentWeatherCode];
             
             // Check if precipitation is high
             const hasPrecipitation = (data.daily && data.daily.precipitation_sum && 
@@ -2314,11 +2554,24 @@
             // Check wind speed for high winds
             const highWinds = data.current.wind_speed_10m > 15; // More than 15 m/s is significant
             
-            if (alertLevel >= 2 || hasPrecipitation || highWinds) {
+            // Create a custom alert if precipitation or high winds without a specific code alert
+            if (!alertInfo && (hasPrecipitation || highWinds)) {
+                // Clear any previous alert classes
+                alertsContainer.className = 'relative border-l-4 p-4 rounded-lg mb-4 pulse-alert';
+                
+                // Add the appropriate severity class
+                const severityClass = hasPrecipitation && highWinds ? 'alert-severity-3' : 'alert-severity-2';
+                alertsContainer.classList.add(severityClass);
+                
+                // Update alert icon
+                alertIcon.className = hasPrecipitation ? 'ti ti-cloud-rain text-xl mr-2 mt-0.5' : 'ti ti-wind text-xl mr-2 mt-0.5';
+                
                 // Create alert message
-                let alertText = currentLanguage === 'en' ? 
+                const descriptionText = currentLanguage === 'en' ? 
                     weatherDescriptions[currentWeatherCode] : 
                     weatherDescriptionsFa[currentWeatherCode];
+                
+                let alertText = descriptionText;
                 
                 if (hasPrecipitation) {
                     if (currentLanguage === 'en') {
@@ -2339,6 +2592,65 @@
                 // Display alert
                 alertTitle.textContent = currentLanguage === 'en' ? "Weather Alert" : "هشدار آب و هوا";
                 alertMessage.textContent = alertText;
+                
+                // Add appropriate actions
+                alertActions.innerHTML = '';
+                const recommendedActions = [];
+                
+                if (hasPrecipitation) {
+                    recommendedActions.push('carry_umbrella', 'drive_carefully');
+                    if (data.daily.precipitation_sum[0] > 30) {
+                        recommendedActions.push('flood_risk');
+                    }
+                }
+                
+                if (highWinds) {
+                    recommendedActions.push('drive_carefully');
+                    if (data.current.wind_speed_10m > 20) {
+                        recommendedActions.push('avoid_travel');
+                    }
+                }
+                
+                recommendedActions.forEach(action => {
+                    const actionInfo = weatherAlertActions[currentLanguage][action];
+                    const actionEl = document.createElement('div');
+                    actionEl.className = 'alert-action-item';
+                    actionEl.innerHTML = `<i class="${actionInfo.icon}"></i> <span>${actionInfo.text}</span>`;
+                    alertActions.appendChild(actionEl);
+                });
+                
+                alertsContainer.classList.remove('hidden');
+            }
+            // If we have specific alert info for this weather code
+            else if (alertInfo && alertInfo.severity > 0) {
+                // Clear any previous alert classes
+                alertsContainer.className = 'relative border-l-4 p-4 rounded-lg mb-4 pulse-alert';
+                
+                // Add the appropriate severity class
+                alertsContainer.classList.add(`alert-severity-${alertInfo.severity}`);
+                
+                // Update alert icon
+                alertIcon.className = `${alertInfo.icon} text-xl mr-2 mt-0.5`;
+                
+                // Create alert message
+                const descriptionText = currentLanguage === 'en' ? 
+                    weatherDescriptions[currentWeatherCode] : 
+                    weatherDescriptionsFa[currentWeatherCode];
+                
+                // Display alert
+                alertTitle.textContent = currentLanguage === 'en' ? "Weather Alert" : "هشدار آب و هوا";
+                alertMessage.textContent = descriptionText;
+                
+                // Add recommended actions
+                alertActions.innerHTML = '';
+                alertInfo.actions.forEach(action => {
+                    const actionInfo = weatherAlertActions[currentLanguage][action];
+                    const actionEl = document.createElement('div');
+                    actionEl.className = 'alert-action-item';
+                    actionEl.innerHTML = `<i class="${actionInfo.icon}"></i> <span>${actionInfo.text}</span>`;
+                    alertActions.appendChild(actionEl);
+                });
+                
                 alertsContainer.classList.remove('hidden');
             } else {
                 alertsContainer.classList.add('hidden');
@@ -2603,7 +2915,7 @@
                 // Update wind compass
                 updateWindCompass(current.windDirection);
                 
-                // Check for weather alerts
+                // Check for weather alerts with enhanced information
                 checkWeatherAlerts(data);
                 
                 // Display historical comparison (simulated)
@@ -2745,59 +3057,77 @@
             hideLoading();
         }
 
-        // Fetch location coordinates from name using OpenWeatherMap API
+        // IMPROVED: Fetch location coordinates with fallback mechanism
         async function getCoordinates(locationName) {
             try {
                 console.log("Getting coordinates for:", locationName);
-                const response = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(locationName)}&limit=1&appid=4d8fb5b93d4af21d66a2948710284366`);
-                const data = await response.json();
                 
-                if (!data || data.length === 0) {
-                    throw new Error(currentLanguage === 'en' ? 
-                        "Location not found" : 
-                        "مکان یافت نشد");
+                // Determine which API to try first based on user location
+                if (isIranianIP) {
+                    try {
+                        // First try Open-Meteo for Iranian users
+                        const response = await fetchWithTimeout(
+                            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1&language=${currentLanguage}`,
+                            { timeout: 3000 }
+                        );
+                        const data = await response.json();
+                        
+                        if (data.results && data.results.length > 0) {
+                            const location = data.results[0];
+                            return {
+                                latitude: location.latitude,
+                                longitude: location.longitude,
+                                name: location.name,
+                                country: location.country,
+                                displayName: `${location.name}, ${location.country}`
+                            };
+                        }
+                    } catch (error) {
+                        console.log("Open-Meteo geocoding failed, trying OpenWeatherMap");
+                    }
                 }
                 
-                const location = data[0];
-                return {
-                    latitude: location.lat,
-                    longitude: location.lon,
-                    name: location.name,
-                    country: location.country,
-                    displayName: `${location.name}, ${location.country}`
-                };
+                // Try OpenWeatherMap API (or as fallback for Iranian users)
+                try {
+                    const response = await fetchWithTimeout(
+                        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(locationName)}&limit=1&appid=4d8fb5b93d4af21d66a2948710284366`,
+                        { timeout: 3000 }
+                    );
+                    const data = await response.json();
+                    
+                    if (data && data.length > 0) {
+                        const location = data[0];
+                        return {
+                            latitude: location.lat,
+                            longitude: location.lon,
+                            name: location.name,
+                            country: location.country,
+                            displayName: `${location.name}, ${location.country}`
+                        };
+                    }
+                } catch (error) {
+                    console.error("OpenWeatherMap geocoding failed");
+                    
+                    // If we're in Iran and both APIs fail, show a specific error
+                    if (isIranianIP) {
+                        throw new Error(currentLanguage === 'en' ? 
+                            "Network issues detected. Please check your connection or try a different location." : 
+                            "مشکلات شبکه شناسایی شد. لطفاً اتصال خود را بررسی کنید یا مکان دیگری را امتحان کنید.");
+                    }
+                }
+                
+                throw new Error(currentLanguage === 'en' ? 
+                    "Location not found" : 
+                    "مکان یافت نشد");
             } catch (err) {
                 console.error("Geocoding error:", err);
-                throw new Error(currentLanguage === 'en' ? 
+                throw new Error(err.message || (currentLanguage === 'en' ? 
                     "Could not find coordinates for this location" : 
-                    "نمی‌توان مختصات این مکان را پیدا کرد");
+                    "نمی‌توان مختصات این مکان را پیدا کرد"));
             }
         }
 
-        // Fetch weather data from Open-Meteo API
-        async function fetchWeatherData(latitude, longitude) {
-            try {
-                console.log("Fetching weather data for:", latitude, longitude);
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&timezone=auto`;
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(currentLanguage === 'en' ? 
-                        `Weather API error: ${response.status}` : 
-                        `خطای API آب و هوا: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (err) {
-                console.error("Weather API error:", err);
-                throw new Error(currentLanguage === 'en' ? 
-                    "Could not fetch weather data" : 
-                    "نمی‌توان داده‌های آب و هوا را دریافت کرد");
-            }
-        }
-
-        // Get weather for a location (by name)
+        // IMPROVED: Get weather data with region-specific optimizations
         async function getWeatherByLocationName(locationName) {
             const loadingMsg = currentLanguage === 'en' ? 
                 "Finding location..." : 
@@ -2863,6 +3193,65 @@
                     displayName: customName || displayName || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`
                 };
                 
+                // Try to get location name if it's coordinates-based
+                if (displayName.includes('°') && !customName) {
+                    try {
+                        // Try to get the real location name if we don't have a custom name
+                        let locationName = null;
+                        
+                        // Try to get location name based on region
+                        if (isIranianIP) {
+                            try {
+                                // Use Open-Meteo for Iranian users
+                                const response = await fetchWithTimeout(
+                                    `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=${currentLanguage}`,
+                                    { timeout: 3000 }
+                                );
+                                const data = await response.json();
+                                
+                                if (data.features && data.features.length > 0) {
+                                    const location = data.features[0].properties;
+                                    // Construct location name from available properties
+                                    const nameParts = [];
+                                    if (location.name) nameParts.push(location.name);
+                                    if (location.city) nameParts.push(location.city);
+                                    if (location.country) nameParts.push(location.country);
+                                    
+                                    locationName = nameParts.join(', ');
+                                }
+                            } catch (error) {
+                                console.log("Open-Meteo reverse geocoding failed");
+                            }
+                        }
+                        
+                        // If we didn't get a name or are not in Iran, try OpenWeatherMap
+                        if (!locationName) {
+                            try {
+                                const response = await fetchWithTimeout(
+                                    `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=4d8fb5b93d4af21d66a2948710284366`,
+                                    { timeout: 3000 }
+                                );
+                                const data = await response.json();
+                                
+                                if (data && data.length > 0) {
+                                    const location = data[0];
+                                    locationName = `${location.name}, ${location.country}`;
+                                }
+                            } catch (error) {
+                                console.error("OpenWeatherMap reverse geocoding failed");
+                            }
+                        }
+                        
+                        // If we got a real location name, update the current location data
+                        if (locationName) {
+                            currentLocationData.displayName = locationName;
+                            // Don't save this as a custom name since it came from the API
+                        }
+                    } catch (error) {
+                        console.error("Error getting location name:", error);
+                    }
+                }
+                
                 // Get weather data
                 const weatherData = await fetchWeatherData(latitude, longitude);
                 
@@ -2872,6 +3261,130 @@
             } catch (err) {
                 showError(err.message);
             }
+        }
+
+        // IMPROVED: Fetch weather data with multiple API backups
+        async function fetchWeatherData(latitude, longitude) {
+            try {
+                console.log("Fetching weather data for:", latitude, longitude);
+                
+                // Always use Open-Meteo for weather data as it's reliable worldwide
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,uv_index&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset&timezone=auto`;
+                
+                try {
+                    const response = await fetchWithTimeout(url, { timeout: 5000 });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Weather API error: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error("Open-Meteo API error:", error);
+                    
+                    // If Open-Meteo fails, try OpenWeatherMap as a backup for weather data
+                    try {
+                        // This is a simplified adaptation that maps OpenWeatherMap data to Open-Meteo format
+                        const owmUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely&units=metric&appid=4d8fb5b93d4af21d66a2948710284366`;
+                        const response = await fetchWithTimeout(owmUrl, { timeout: 5000 });
+                        
+                        if (!response.ok) {
+                            throw new Error(`OpenWeatherMap API error: ${response.status}`);
+                        }
+                        
+                        const owmData = await response.json();
+                        
+                        // Map OpenWeatherMap data to Open-Meteo format
+                        return convertOwmToOpenMeteo(owmData);
+                    } catch (owmError) {
+                        console.error("OpenWeatherMap API error:", owmError);
+                        throw new Error(currentLanguage === 'en' ? 
+                            "All weather services are currently unavailable. Please try again later." : 
+                            "همه سرویس‌های آب و هوا در حال حاضر در دسترس نیستند. لطفا بعدا دوباره امتحان کنید.");
+                    }
+                }
+            } catch (err) {
+                console.error("Weather API error:", err);
+                throw new Error(err.message || (currentLanguage === 'en' ? 
+                    "Could not fetch weather data" : 
+                    "نمی‌توان داده‌های آب و هوا را دریافت کرد"));
+            }
+        }
+        
+        // IMPROVED: Convert OpenWeatherMap data to Open-Meteo format for consistent handling
+        function convertOwmToOpenMeteo(owmData) {
+            // Map OWM weather codes to WMO codes (approximate conversion)
+            function mapWeatherCode(owmId) {
+                // These are approximate mappings
+                if (owmId >= 200 && owmId < 300) return 95; // Thunderstorm
+                if (owmId >= 300 && owmId < 400) return 51; // Drizzle
+                if (owmId >= 500 && owmId < 510) return 61; // Rain
+                if (owmId >= 510 && owmId < 520) return 66; // Freezing rain
+                if (owmId >= 520 && owmId < 600) return 80; // Showers
+                if (owmId >= 600 && owmId < 700) return 71; // Snow
+                if (owmId >= 700 && owmId < 800) return 45; // Fog
+                if (owmId === 800) return 0; // Clear
+                if (owmId > 800) return 2; // Partly cloudy
+                return 3; // Default to overcast
+            }
+            
+            // Create daily arrays
+            const dailyData = {
+                time: [],
+                weather_code: [],
+                temperature_2m_max: [],
+                temperature_2m_min: [],
+                precipitation_sum: [],
+                sunrise: [],
+                sunset: []
+            };
+            
+            // Fill daily data
+            for (let i = 0; i < Math.min(7, owmData.daily.length); i++) {
+                const day = owmData.daily[i];
+                dailyData.time.push(new Date(day.dt * 1000).toISOString().split('T')[0]);
+                dailyData.weather_code.push(mapWeatherCode(day.weather[0].id));
+                dailyData.temperature_2m_max.push(day.temp.max);
+                dailyData.temperature_2m_min.push(day.temp.min);
+                dailyData.precipitation_sum.push(day.rain || 0);
+                dailyData.sunrise.push(new Date(day.sunrise * 1000).toISOString());
+                dailyData.sunset.push(new Date(day.sunset * 1000).toISOString());
+            }
+            
+            // Create hourly arrays
+            const hourlyData = {
+                time: [],
+                temperature_2m: [],
+                weather_code: [],
+                precipitation_probability: []
+            };
+            
+            // Fill hourly data
+            for (let i = 0; i < Math.min(24, owmData.hourly.length); i++) {
+                const hour = owmData.hourly[i];
+                hourlyData.time.push(new Date(hour.dt * 1000).toISOString());
+                hourlyData.temperature_2m.push(hour.temp);
+                hourlyData.weather_code.push(mapWeatherCode(hour.weather[0].id));
+                hourlyData.precipitation_probability.push(hour.pop * 100); // Convert from 0-1 to percentage
+            }
+            
+            // Create current data
+            const current = {
+                temperature_2m: owmData.current.temp,
+                apparent_temperature: owmData.current.feels_like,
+                relative_humidity_2m: owmData.current.humidity,
+                weather_code: mapWeatherCode(owmData.current.weather[0].id),
+                wind_speed_10m: owmData.current.wind_speed,
+                wind_direction_10m: owmData.current.wind_deg,
+                uv_index: owmData.current.uvi
+            };
+            
+            // Return in Open-Meteo format
+            return {
+                current,
+                hourly: hourlyData,
+                daily: dailyData
+            };
         }
 
         // Initialize app when DOM is loaded
