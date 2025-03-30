@@ -16,9 +16,27 @@ window.userPreferences = {
     dismissedAlerts: []
 };
 
+// Detect if running in WebView
+window.isWebView = (function() {
+    // Various ways to detect WebView
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    // Check for common WebView indicators
+    return userAgent.indexOf('wv') > -1 || // Android WebView
+           userAgent.indexOf('flutter') > -1 || // Flutter WebView
+           window.navigator.standalone || // iOS standalone mode (from homescreen)
+           window.matchMedia('(display-mode: standalone)').matches;
+})();
+
 // Initialize application
 async function initApp() {
     console.log("Initializing app...");
+    console.log("WebView detected:", window.isWebView);
+    
+    // Add meta tag for WebView if needed
+    if (window.isWebView) {
+        addWebViewMetaTags();
+    }
     
     // Load user preferences
     loadUserPreferences();
@@ -37,6 +55,34 @@ async function initApp() {
     
     // Check for location permission parameters
     checkLocationPermissionParameters();
+    
+    // For WebView, display a special message about location permissions
+    if (window.isWebView) {
+        showWebViewLocationHelp();
+    }
+}
+
+// Add meta tags for WebView
+function addWebViewMetaTags() {
+    const meta = document.createElement('meta');
+    meta.name = 'viewport';
+    meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    document.getElementsByTagName('head')[0].appendChild(meta);
+}
+
+// Show WebView location help
+function showWebViewLocationHelp() {
+    // Create a helper button for location permissions
+    const locationHelper = document.createElement('div');
+    locationHelper.className = 'fixed bottom-4 right-4 bg-primary text-white p-3 rounded-full shadow-lg z-50';
+    locationHelper.innerHTML = '<i class="ti ti-location"></i>';
+    locationHelper.addEventListener('click', function() {
+        showToast(window.currentLanguage === 'en' ? 
+            "Attempting to access your location. Please allow permission if prompted." : 
+            "در حال تلاش برای دسترسی به موقعیت شما. لطفاً در صورت درخواست، اجازه دهید.");
+        getUserLocation(false, true); // Force location request
+    });
+    document.body.appendChild(locationHelper);
 }
 
 // Save user preferences to sessionStorage
@@ -288,11 +334,16 @@ function checkLocationPermissionParameters() {
     }
     
     // Start with permission request for location
-    getUserLocation();
+    // In WebView, it's better to start with New York than to automatically request location
+    if (window.isWebView) {
+        getWeatherByLocationName('New York');
+    } else {
+        getUserLocation();
+    }
 }
 
 // Get user's location for initial weather display
-function getUserLocation(fromMapButton = false) {
+function getUserLocation(fromMapButton = false, forceRequest = false) {
     if ('geolocation' in navigator) {
         const loadingMsg = window.currentLanguage === 'en' ? 
             'Getting your location...' : 
@@ -318,10 +369,39 @@ function getUserLocation(fromMapButton = false) {
         }, 30000); // 30 seconds timeout
         
         try {
+            // In WebView on Android, we need to use a more direct approach
+            const geolocationOptions = { 
+                enableHighAccuracy: true,
+                timeout: 25000,
+                maximumAge: 0
+            };
+            
+            // Some WebViews need extra handling for location permission
+            if (window.isWebView) {
+                console.log("Using WebView geolocation approach");
+                
+                // Add a timeout to allow the WebView to get permissions
+                if (!forceRequest) {
+                    // If this is the first attempt and not forcing, show a message
+                    showToast(window.currentLanguage === 'en' ? 
+                        "Tap the location button below to get weather for your location" : 
+                        "برای دریافت آب و هوای موقعیت خود، روی دکمه موقعیت در پایین ضربه بزنید", 5000);
+                    
+                    clearTimeout(geolocationTimeout);
+                    if (!fromMapButton) {
+                        hideLoading();
+                        getWeatherByLocationName('New York'); // Start with default city
+                    }
+                    return;
+                }
+            }
+            
             navigator.geolocation.getCurrentPosition(
                 position => {
                     clearTimeout(geolocationTimeout);
                     const { latitude, longitude } = position.coords;
+                    
+                    console.log("Successfully got location:", latitude, longitude);
                     
                     // Save coordinates for later use
                     window.userCoordinates = { latitude, longitude };
@@ -388,11 +468,7 @@ function getUserLocation(fromMapButton = false) {
                         getWeatherByLocationName('New York');
                     }
                 },
-                { 
-                    enableHighAccuracy: true,
-                    timeout: 25000,
-                    maximumAge: 0
-                }
+                geolocationOptions
             );
         } catch (e) {
             clearTimeout(geolocationTimeout);
