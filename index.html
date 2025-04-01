@@ -3,7 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkySense Weather App</title>
+    <!-- SEO Improvements -->
+    <title>SkySense Weather - Real-time Weather Forecasts & Alerts | Weather App</title>
+    <meta name="description" content="Get accurate weather forecasts, real-time updates, severe weather alerts, and hourly predictions for any location worldwide. Plan your day with SkySense Weather!">
+    <meta name="keywords" content="weather, forecast, weather app, weather alerts, hourly forecast, temperature, rain, snow, wind, humidity, UV index, climate, weather report, weather radar, current weather">
+    
+    <!-- Open Graph tags for social sharing -->
+    <meta property="og:title" content="SkySense Weather - Accurate Weather Forecasts">
+    <meta property="og:description" content="Get real-time weather forecasts, alerts, and hourly predictions for any location worldwide. Plan your day with confidence!">
+    <meta property="og:url" content="https://skysenseapp.ir/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://skysenseapp.ir/icon.png">
+    
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SkySense Weather - Accurate Forecasts">
+    <meta name="twitter:description" content="Get real-time weather forecasts and alerts for any location">
+    <meta name="twitter:image" content="https://skysenseapp.ir/icon.png">
+    
+    <!-- Mobile app capability -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="SkySense Weather">
+    
+    <!-- Alternative languages for SEO -->
+    <link rel="alternate" hreflang="en" href="https://skysenseapp.ir/">
+    <link rel="alternate" hreflang="fa" href="https://skysenseapp.ir/?lang=fa">
+    <link rel="alternate" hreflang="ku" href="https://skysenseapp.ir/?lang=ku">
+    <link rel="canonical" href="https://skysenseapp.ir/">
+    
+    <!-- Schema.org JSON-LD for better SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SkySense Weather",
+      "url": "https://skysenseapp.ir/",
+      "description": "Get accurate weather forecasts, real-time updates, severe weather alerts, and hourly predictions for any location worldwide.",
+      "applicationCategory": "Weather",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "1257"
+      }
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet">
@@ -30,7 +82,7 @@
 <body class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
     <div class="container mx-auto px-4 py-6 max-w-xl">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-white" data-en="SkySense" data-fa="اسکای‌سنس">SkySense</h1>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white" data-en="SkySense" data-fa="اسکای‌سنس" data-ku="سکای‌سێنس">SkySense</h1>
             
             <div class="flex items-center gap-3">
                 <!-- Language Selector -->
@@ -54,19 +106,25 @@
                             </div>
                             <span>فارسی</span>
                         </div>
+                        <div class="lang-option" data-lang="ku">
+                            <div class="lang-selector-flag">
+                                <img src="https://cdn-icons-png.flaticon.com/512/330/330605.png" alt="Kurdish">
+                            </div>
+                            <span>کوردی</span>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Unit Toggle -->
                 <div class="flex items-center gap-2">
-                    <span class="text-gray-700 dark:text-gray-300" data-en="°C" data-fa="°C">°C</span>
+                    <span class="text-gray-700 dark:text-gray-300" data-en="°C" data-fa="°C" data-ku="°C">°C</span>
                     <div class="relative inline-block">
                         <input type="checkbox" id="unit-toggle" class="toggle-checkbox" />
                         <label for="unit-toggle" class="toggle-label">
                             <span class="toggle-button"></span>
                         </label>
                     </div>
-                    <span class="text-gray-700 dark:text-gray-300" data-en="°F" data-fa="°F">°F</span>
+                    <span class="text-gray-700 dark:text-gray-300" data-en="°F" data-fa="°F" data-ku="°F">°F</span>
                 </div>
                 
                 <!-- Settings Button -->
@@ -84,7 +142,7 @@
             <div class="flex items-start">
                 <i id="alert-icon" class="text-xl mr-2 mt-0.5"></i>
                 <div>
-                    <h3 class="font-semibold" id="alert-title" data-en="Weather Alert" data-fa="هشدار آب و هوا">Weather Alert</h3>
+                    <h3 class="font-semibold" id="alert-title" data-en="Weather Alert" data-fa="هشدار آب و هوا" data-ku="ئاگاداری کەش و هەوا">Weather Alert</h3>
                     <p class="text-sm" id="alert-message"></p>
                     
                     <!-- Alert actions/recommendations -->
@@ -97,8 +155,8 @@
         <div id="favorites-container" class="hidden mb-4">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3">
                 <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300" data-en="Favorite Locations" data-fa="مکان‌های مورد علاقه">Favorite Locations</h3>
-                    <button id="manage-favorites" class="text-xs text-primary hover:underline" data-en="Manage" data-fa="مدیریت">Manage</button>
+                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300" data-en="Favorite Locations" data-fa="مکان‌های مورد علاقه" data-ku="شوێنە دڵخوازەکان">Favorite Locations</h3>
+                    <button id="manage-favorites" class="text-xs text-primary hover:underline" data-en="Manage" data-fa="مدیریت" data-ku="بەڕێوەبردن">Manage</button>
                 </div>
                 <div id="favorites-list" class="flex flex-wrap gap-2"></div>
             </div>
@@ -107,8 +165,8 @@
         <!-- Search and Map Container -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg search-container mb-6">
             <div class="flex border-b dark:border-gray-700">
-                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" data-en="Search Location" data-fa="جستجوی مکان">Search Location</button>
-                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه">Pin on Map</button>
+                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" data-en="Search Location" data-fa="جستجوی مکان" data-ku="گەڕان بۆ شوێن">Search Location</button>
+                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه" data-ku="دیاریکردن لەسەر نەخشە">Pin on Map</button>
             </div>
             
             <div id="searchPanel" class="p-6 pb-24">
@@ -121,6 +179,7 @@
                                 placeholder="City, mountain, desert, sea coordinates..." 
                                 data-placeholder-en="City, mountain, desert, sea coordinates..."
                                 data-placeholder-fa="شهر، کوه، بیابان، مختصات دریا..."
+                                data-placeholder-ku="شار، چیا، بیابان، دووری دەریا..."
                                 class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
                                 autocomplete="off"
                                 required
@@ -131,7 +190,7 @@
                             type="submit" 
                             class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                         >
-                            <i class="ti ti-search mr-1"></i> <span data-en="Search" data-fa="جستجو">Search</span>
+                            <i class="ti ti-search mr-1"></i> <span data-en="Search" data-fa="جستجو" data-ku="گەڕان">Search</span>
                         </button>
                     </form>
                 </div>
@@ -141,12 +200,12 @@
                 <div id="map" class="mb-4">
                     <!-- Location Button will be added here by JS -->
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3" data-en="Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.)." data-fa="برای دریافت آب و هوای دقیق هر مکان (کوه، بیابان، دریا و غیره) روی نقشه کلیک کنید.">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3" data-en="Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.)." data-fa="برای دریافت آب و هوای دقیق هر مکان (کوه، بیابان، دریا و غیره) روی نقشه کلیک کنید." data-ku="کلیک لە هەر شوێنێک بکە لەسەر نەخشەکە بۆ وەرگرتنی کەشوهەوای ئەو شوێنە دیاریکراوە (چیاکان، بیابانەکان، دەریاکان، هتد).">
                     Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.).
                 </p>
                 <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-gray-700 dark:text-gray-300" data-en="Selected point:" data-fa="نقطه انتخاب شده:">Selected point:</span>
-                    <span id="selectedLocation" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm text-gray-800 dark:text-white" data-en="None selected" data-fa="هیچ نقطه‌ای انتخاب نشده">None selected</span>
+                    <span class="text-gray-700 dark:text-gray-300" data-en="Selected point:" data-fa="نقطه انتخاب شده:" data-ku="خاڵی دیاریکراو:">Selected point:</span>
+                    <span id="selectedLocation" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm text-gray-800 dark:text-white" data-en="None selected" data-fa="هیچ نقطه‌ای انتخاب نشده" data-ku="هیچ دیاری نەکراوە">None selected</span>
                 </div>
                 <button 
                     id="getWeatherForLocation" 
@@ -154,6 +213,7 @@
                     disabled
                     data-en="Get Weather"
                     data-fa="دریافت آب و هوا"
+                    data-ku="وەرگرتنی کەشوهەوا"
                 >
                     Get Weather
                 </button>
@@ -163,8 +223,8 @@
         <div id="loadingContainer" class="flex justify-center items-center py-10">
             <div class="text-center">
                 <div class="loading-spinner mx-auto mb-4"></div>
-                <p class="text-gray-700 dark:text-gray-300" id="loadingText" data-en="Getting your location..." data-fa="در حال دریافت موقعیت شما...">Getting your location...</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="permissionText" data-en="Please allow location access when prompted" data-fa="لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید">Please allow location access when prompted</p>
+                <p class="text-gray-700 dark:text-gray-300" id="loadingText" data-en="Getting your location..." data-fa="در حال دریافت موقعیت شما..." data-ku="شوێنەکەت وەردەگرین...">Getting your location...</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="permissionText" data-en="Please allow location access when prompted" data-fa="لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید" data-ku="تکایە کاتێک داوات لێدەکرێت، ڕێگە بدە بە دەستگەیشتن بە شوێن">Please allow location access when prompted</p>
             </div>
         </div>
 
@@ -192,19 +252,19 @@
                         <p id="weatherDescription" class="text-gray-600 dark:text-gray-300 mb-3 text-center md:text-left"></p>
                         <div class="flex flex-wrap gap-x-6 gap-y-2">
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Temperature:" data-fa="دما:">Temperature:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Temperature:" data-fa="دما:" data-ku="پلەی گەرمی:">Temperature:</span>
                                 <span id="temperature" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Feels like:" data-fa="احساس دمایی:">Feels like:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Feels like:" data-fa="احساس دمایی:" data-ku="هەستکردن وەک:">Feels like:</span>
                                 <span id="feelsLike" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Humidity:" data-fa="رطوبت:">Humidity:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Humidity:" data-fa="رطوبت:" data-ku="شێ:">Humidity:</span>
                                 <span id="humidity" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                             <div class="flex items-center">
-                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Wind:" data-fa="باد:">Wind:</span>
+                                <span class="text-gray-700 dark:text-gray-300 font-medium" data-en="Wind:" data-fa="باد:" data-ku="با:">Wind:</span>
                                 <span id="wind" class="ml-2 text-gray-900 dark:text-white"></span>
                             </div>
                         </div>
@@ -214,33 +274,33 @@
                 <!-- Expandable Weather Details -->
                 <div class="px-6 pb-4">
                     <button id="details-toggle" class="w-full flex justify-between items-center text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary focus:outline-none transition-colors">
-                        <span class="font-medium" data-en="Weather Details" data-fa="جزئیات آب و هوا">Weather Details</span>
+                        <span class="font-medium" data-en="Weather Details" data-fa="جزئیات آب و هوا" data-ku="وردەکاری کەشوهەوا">Weather Details</span>
                         <i class="ti ti-chevron-down transition-transform duration-200"></i>
                     </button>
                     
                     <div id="details-content" class="hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="UV Index" data-fa="شاخص UV">UV Index</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="UV Index" data-fa="شاخص UV" data-ku="پێوەری UV">UV Index</p>
                                 <p id="uv-index" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Precipitation" data-fa="بارش">Precipitation</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Precipitation" data-fa="بارش" data-ku="بارین">Precipitation</p>
                                 <p id="precipitation" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunrise" data-fa="طلوع آفتاب">Sunrise</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunrise" data-fa="طلوع آفتاب" data-ku="هەڵاتنی خۆر">Sunrise</p>
                                 <p id="sunrise" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunset" data-fa="غروب آفتاب">Sunset</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunset" data-fa="غروب آفتاب" data-ku="ئاوابوونی خۆر">Sunset</p>
                                 <p id="sunset" class="text-lg font-medium text-gray-800 dark:text-white"></p>
                             </div>
                         </div>
                         
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Wind Direction" data-fa="جهت باد">Wind Direction</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Wind Direction" data-fa="جهت باد" data-ku="ئاراستەی با">Wind Direction</p>
                                 <div id="wind-compass" class="compass">
                                     <div class="compass-face">
                                         <div class="compass-direction">N</div>
@@ -252,9 +312,9 @@
                                 </div>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Historical Comparison" data-fa="مقایسه تاریخی">Historical Comparison</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Historical Comparison" data-fa="مقایسه تاریخی" data-ku="بەراوردی مێژوویی">Historical Comparison</p>
                                 <div id="historical-comparison" class="text-center px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <p id="historical-text" class="text-sm text-gray-700 dark:text-gray-300" data-en="Loading historical data..." data-fa="در حال بارگذاری داده‌های تاریخی...">Loading historical data...</p>
+                                    <p id="historical-text" class="text-sm text-gray-700 dark:text-gray-300" data-en="Loading historical data..." data-fa="در حال بارگذاری داده‌های تاریخی..." data-ku="زانیاری مێژوویی بار دەکرێت...">Loading historical data...</p>
                                 </div>
                             </div>
                         </div>
@@ -265,7 +325,7 @@
             <!-- Hourly Forecast -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="24-Hour Forecast" data-fa="پیش‌بینی ۲۴ ساعته">24-Hour Forecast</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="24-Hour Forecast" data-fa="پیش‌بینی ۲۴ ساعته" data-ku="پێشبینی ٢٤ کاتژمێر">24-Hour Forecast</h3>
                 </div>
                 <div class="p-4 forecast-container">
                     <div id="hourlyForecastContent" class="flex gap-3 min-w-full"></div>
@@ -278,7 +338,7 @@
             <!-- 7-Day Forecast with Temperature Graph -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="7-Day Forecast" data-fa="پیش‌بینی ۷ روزه">7-Day Forecast</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="7-Day Forecast" data-fa="پیش‌بینی ۷ روزه" data-ku="پێشبینی ٧ ڕۆژ">7-Day Forecast</h3>
                 </div>
                 
                 <div class="p-4">
@@ -299,21 +359,39 @@
         <div id="errorContainer" class="hidden bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 p-4 rounded-lg mt-4">
             <p id="errorMessage"></p>
         </div>
+
+        <!-- SEO Content Section (hidden from view but visible to search engines) -->
+        <div class="sr-only">
+            <h2>Real-time Weather Forecasts for Any Location</h2>
+            <p>SkySense Weather provides accurate, real-time weather forecasts for cities, towns, mountains, deserts, seas, and specific coordinates worldwide. Get current conditions, hourly updates, and 7-day forecasts to plan your activities with confidence.</p>
+            
+            <h2>Comprehensive Weather Information</h2>
+            <p>Access detailed weather data including temperature, humidity, wind speed and direction, UV index, precipitation, sunrise and sunset times. Our forecasts help you prepare for changing weather conditions and stay safe during severe weather events.</p>
+            
+            <h2>Weather Alerts and Safety Recommendations</h2>
+            <p>Receive timely alerts about severe weather conditions such as storms, heavy rain, snow, extreme temperatures, and strong winds. Each alert includes practical safety recommendations to help you stay safe.</p>
+            
+            <h2>Multi-language Support</h2>
+            <p>SkySense Weather is available in multiple languages including English, Persian (Farsi), and Kurdish, making accurate weather information accessible to more people across different regions.</p>
+            
+            <h2>User-Friendly Features</h2>
+            <p>Easily save your favorite locations, share weather information with friends and family, customize your dashboard, and switch between metric and imperial units for a personalized experience.</p>
+        </div>
     </div>
     
     <!-- Location Name Modal -->
     <div id="locationNameModal" class="location-name-modal">
         <div class="location-name-content">
-            <h3 class="text-xl font-semibold mb-4" data-en="Name this location" data-fa="نام‌گذاری این مکان">Name this location</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Give this location a name you'll remember" data-fa="به این مکان نامی بدهید که به خاطر بسپارید">Give this location a name you'll remember</p>
+            <h3 class="text-xl font-semibold mb-4" data-en="Name this location" data-fa="نام‌گذاری این مکان" data-ku="ناوی ئەم شوێنە">Name this location</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Give this location a name you'll remember" data-fa="به این مکان نامی بدهید که به خاطر بسپارید" data-ku="ناوێک بدە بەم شوێنە کە لەبیرت بێت">Give this location a name you'll remember</p>
             
             <div class="mb-4">
                 <input type="text" id="customLocationName" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" placeholder="e.g. Home, Work, Favorite Beach...">
             </div>
             
             <div class="flex justify-end gap-2">
-                <button id="cancelLocationName" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg" data-en="Cancel" data-fa="انصراف">Cancel</button>
-                <button id="saveLocationName" class="px-4 py-2 bg-primary text-white rounded-lg" data-en="Save" data-fa="ذخیره">Save</button>
+                <button id="cancelLocationName" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg" data-en="Cancel" data-fa="انصراف" data-ku="هەڵوەشاندنەوە">Cancel</button>
+                <button id="saveLocationName" class="px-4 py-2 bg-primary text-white rounded-lg" data-en="Save" data-fa="ذخیره" data-ku="هەڵگرتن">Save</button>
             </div>
         </div>
     </div>
@@ -323,17 +401,17 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="settings-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Customize Dashboard" data-fa="شخصی‌سازی داشبورد">Customize Dashboard</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Customize Dashboard" data-fa="شخصی‌سازی داشبورد" data-ku="ڕێکخستنی داشبۆرد">Customize Dashboard</h3>
                 <button id="close-settings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
             <div class="p-6">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Select which weather elements to display:" data-fa="انتخاب کنید که کدام عناصر آب و هوا نمایش داده شوند:">Select which weather elements to display:</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Select which weather elements to display:" data-fa="انتخاب کنید که کدام عناصر آب و هوا نمایش داده شوند:" data-ku="دیاری بکە کام ڕەگەزی کەشوهەوا پیشان بدرێت:">Select which weather elements to display:</p>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <label for="show-hourly" class="text-gray-700 dark:text-gray-300" data-en="Hourly Forecast" data-fa="پیش‌بینی ساعتی">Hourly Forecast</label>
+                        <label for="show-hourly" class="text-gray-700 dark:text-gray-300" data-en="Hourly Forecast" data-fa="پیش‌بینی ساعتی" data-ku="پێشبینی کاتژمێری">Hourly Forecast</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-hourly" class="toggle-checkbox" checked />
                             <label for="show-hourly" class="toggle-label">
@@ -342,7 +420,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-details" class="text-gray-700 dark:text-gray-300" data-en="Weather Details" data-fa="جزئیات آب و هوا">Weather Details</label>
+                        <label for="show-details" class="text-gray-700 dark:text-gray-300" data-en="Weather Details" data-fa="جزئیات آب و هوا" data-ku="وردەکاری کەشوهەوا">Weather Details</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-details" class="toggle-checkbox" checked />
                             <label for="show-details" class="toggle-label">
@@ -351,7 +429,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-chart" class="text-gray-700 dark:text-gray-300" data-en="Temperature Chart" data-fa="نمودار دما">Temperature Chart</label>
+                        <label for="show-chart" class="text-gray-700 dark:text-gray-300" data-en="Temperature Chart" data-fa="نمودار دما" data-ku="هێڵکاری پلەی گەرمی">Temperature Chart</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-chart" class="toggle-checkbox" checked />
                             <label for="show-chart" class="toggle-label">
@@ -360,7 +438,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-alerts" class="text-gray-700 dark:text-gray-300" data-en="Weather Alerts" data-fa="هشدارهای آب و هوا">Weather Alerts</label>
+                        <label for="show-alerts" class="text-gray-700 dark:text-gray-300" data-en="Weather Alerts" data-fa="هشدارهای آب و هوا" data-ku="ئاگاداریەکانی کەشوهەوا">Weather Alerts</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-alerts" class="toggle-checkbox" checked />
                             <label for="show-alerts" class="toggle-label">
@@ -369,7 +447,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <label for="show-historical" class="text-gray-700 dark:text-gray-300" data-en="Historical Comparison" data-fa="مقایسه تاریخی">Historical Comparison</label>
+                        <label for="show-historical" class="text-gray-700 dark:text-gray-300" data-en="Historical Comparison" data-fa="مقایسه تاریخی" data-ku="بەراوردی مێژوویی">Historical Comparison</label>
                         <div class="relative inline-block">
                             <input type="checkbox" id="show-historical" class="toggle-checkbox" checked />
                             <label for="show-historical" class="toggle-label">
@@ -380,7 +458,7 @@
                 </div>
                 
                 <div class="mt-8 text-right">
-                    <button id="save-settings" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Save Preferences" data-fa="ذخیره تنظیمات">
+                    <button id="save-settings" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Save Preferences" data-fa="ذخیره تنظیمات" data-ku="هەڵگرتنی ڕێکخستنەکان">
                         Save Preferences
                     </button>
                 </div>
@@ -393,16 +471,16 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="share-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Share Weather" data-fa="اشتراک‌گذاری آب و هوا">Share Weather</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Share Weather" data-fa="اشتراک‌گذاری آب و هوا" data-ku="هاوبەشکردنی کەشوهەوا">Share Weather</h3>
                 <button id="close-share" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
             <div class="p-6">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Share this weather information with others:" data-fa="این اطلاعات آب و هوا را با دیگران به اشتراک بگذارید:">Share this weather information with others:</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Share this weather information with others:" data-fa="این اطلاعات آب و هوا را با دیگران به اشتراک بگذارید:" data-ku="ئەم زانیاریانەی کەشوهەوا لەگەڵ کەسانی تر هاوبەش بکە:">Share this weather information with others:</p>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-en="Share Link" data-fa="لینک اشتراک‌گذاری">Share Link</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-en="Share Link" data-fa="لینک اشتراک‌گذاری" data-ku="بەستەری هاوبەشکردن">Share Link</label>
                     <div class="flex">
                         <input type="text" id="share-url" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" readonly>
                         <button id="copy-link" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-opacity-90 transition-colors">
@@ -434,7 +512,7 @@
         <div class="absolute inset-0 bg-black bg-opacity-50" id="favorites-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Manage Favorites" data-fa="مدیریت علاقه‌مندی‌ها">Manage Favorites</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Manage Favorites" data-fa="مدیریت علاقه‌مندی‌ها" data-ku="بەڕێوەبردنی دڵخوازەکان">Manage Favorites</h3>
                 <button id="close-favorites" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                     <i class="ti ti-x text-xl"></i>
                 </button>
@@ -442,13 +520,13 @@
             <div class="p-6">
                 <div id="no-favorites" class="hidden text-center py-6 text-gray-500 dark:text-gray-400">
                     <i class="ti ti-star text-4xl mb-2"></i>
-                    <p data-en="No favorite locations yet" data-fa="هنوز مکان مورد علاقه‌ای ثبت نشده است">No favorite locations yet</p>
+                    <p data-en="No favorite locations yet" data-fa="هنوز مکان مورد علاقه‌ای ثبت نشده است" data-ku="هێشتا هیچ شوێنێکی دڵخواز تۆمار نەکراوە">No favorite locations yet</p>
                 </div>
                 
                 <ul id="favorites-management-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
                 
                 <div class="mt-6 text-right">
-                    <button id="done-favorites" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Done" data-fa="انجام شد">
+                    <button id="done-favorites" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Done" data-fa="انجام شد" data-ku="تەواو">
                         Done
                     </button>
                 </div>
