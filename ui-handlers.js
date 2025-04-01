@@ -21,7 +21,9 @@ async function handleWeatherFormSubmit(e) {
     if (!location) {
         showError(window.currentLanguage === 'en' ? 
             "Please enter a location" : 
-            "لطفاً یک مکان وارد کنید");
+            window.currentLanguage === 'fa' ?
+            "لطفاً یک مکان وارد کنید" :
+            "تکایە شوێنێک بنووسە");
         return;
     }
     
@@ -210,7 +212,9 @@ function initMapOnFirstClick() {
             <div class="p-4 text-center text-red-500">
                 <p>${window.currentLanguage === 'en' ? 
                 "Could not initialize map. Please try refreshing the page." : 
-                "نقشه راه‌اندازی نشد. لطفا صفحه را رفرش کنید."}</p>
+                window.currentLanguage === 'fa' ?
+                "نقشه راه‌اندازی نشد. لطفا صفحه را رفرش کنید." :
+                "نەخشە دەستپێنەکرد. تکایە پەڕەکە نوێ بکەرەوە."}</p>
             </div>
         `;
         document.getElementById('map').appendChild(mapErrorMessage);
@@ -226,7 +230,9 @@ function addLocationButton() {
     locationButton.innerHTML = '<i class="ti ti-current-location"></i>';
     locationButton.title = window.currentLanguage === 'en' ? 
         'Go to my location' : 
-        'برو به موقعیت من';
+        window.currentLanguage === 'fa' ?
+        'برو به موقعیت من' :
+        'بڕۆ بۆ شوێنی من';
     
     // Improve location button behavior
     locationButton.addEventListener('click', function() {
@@ -242,7 +248,9 @@ function checkLocationServices() {
     if (!navigator.geolocation) {
         showToast(window.currentLanguage === 'en' ? 
             "Your browser doesn't support geolocation" : 
-            "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند");
+            window.currentLanguage === 'fa' ?
+            "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند" :
+            "وێبگەڕەکەت پشتگیری دۆزینەوەی شوێن ناکات");
         return;
     }
     
@@ -263,13 +271,17 @@ function checkLocationServices() {
                     // Will prompt the user
                     showToast(window.currentLanguage === 'en' ? 
                         "Please allow location access when prompted" : 
-                        "لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید");
+                        window.currentLanguage === 'fa' ?
+                        "لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید" :
+                        "تکایە کاتێک داوات لێدەکرێت، ڕێگە بدە بە دەستگەیشتن بە شوێن");
                     getUserLocationForMap();
                 } else if (permissionStatus.state === 'denied') {
                     // User has denied permission
                     showToast(window.currentLanguage === 'en' ? 
                         "Location access denied. Please enable location services in your browser settings." : 
-                        "دسترسی به موقعیت رد شد. لطفاً خدمات مکان‌یابی را در تنظیمات مرورگر خود فعال کنید.");
+                        window.currentLanguage === 'fa' ?
+                        "دسترسی به موقعیت رد شد. لطفاً خدمات مکان‌یابی را در تنظیمات مرورگر خود فعال کنید." :
+                        "دەستگەیشتن بە شوێن ڕەتکرایەوە. تکایە خزمەتگوزاری شوێن لە ڕێکخستنەکانی وێبگەڕەکەت چالاک بکە.");
                     
                     // Reset the button
                     if (locationButton) {
@@ -342,22 +354,30 @@ function getUserLocationForMap() {
                 case error.PERMISSION_DENIED:
                     errorMsg = window.currentLanguage === 'en' ? 
                         "Location access denied. Please enable location in your device settings." : 
-                        "دسترسی به موقعیت رد شد. لطفاً مکان‌یابی را در تنظیمات دستگاه خود فعال کنید.";
+                        window.currentLanguage === 'fa' ?
+                        "دسترسی به موقعیت رد شد. لطفاً مکان‌یابی را در تنظیمات دستگاه خود فعال کنید." :
+                        "دەستگەیشتن بە شوێن ڕەتکرایەوە. تکایە شوێن لە ڕێکخستنەکانی ئامێرەکەت چالاک بکە.";
                     break;
                 case error.POSITION_UNAVAILABLE:
                     errorMsg = window.currentLanguage === 'en' ? 
                         "Location information is unavailable. Check your device's location settings." : 
-                        "اطلاعات موقعیت در دسترس نیست. تنظیمات مکان دستگاه خود را بررسی کنید.";
+                        window.currentLanguage === 'fa' ?
+                        "اطلاعات موقعیت در دسترس نیست. تنظیمات مکان دستگاه خود را بررسی کنید." :
+                        "زانیاری شوێن بەردەست نییە. ڕێکخستنەکانی شوێنی ئامێرەکەت بپشکنە.";
                     break;
                 case error.TIMEOUT:
                     errorMsg = window.currentLanguage === 'en' ? 
                         "Location request timed out. Please try again." : 
-                        "درخواست موقعیت به پایان رسید. لطفا دوباره تلاش کنید.";
+                        window.currentLanguage === 'fa' ?
+                        "درخواست موقعیت به پایان رسید. لطفا دوباره تلاش کنید." :
+                        "داواکاری شوێن کاتی بەسەرچوو. تکایە دووبارە هەوڵ بدەوە.";
                     break;
                 default:
                     errorMsg = window.currentLanguage === 'en' ? 
                         "An unknown error occurred getting your location." : 
-                        "خطای ناشناخته در دریافت موقعیت شما رخ داده است.";
+                        window.currentLanguage === 'fa' ?
+                        "خطای ناشناخته در دریافت موقعیت شما رخ داده است." :
+                        "هەڵەیەکی نەناسراو ڕوویدا لە کاتی وەرگرتنی شوێنەکەت.";
             }
             showToast(errorMsg, 5000);
         },
@@ -531,30 +551,43 @@ function checkWeatherAlerts(data) {
         alertIcon.className = hasPrecipitation ? 'ti ti-cloud-rain text-xl mr-2 mt-0.5' : 'ti ti-wind text-xl mr-2 mt-0.5';
         
         // Create alert message
-        const descriptionText = window.currentLanguage === 'en' ? 
-            weatherDescriptions[currentWeatherCode] : 
-            weatherDescriptionsFa[currentWeatherCode];
+        let weatherDesc;
+        if (window.currentLanguage === 'en') {
+            weatherDesc = weatherDescriptions[currentWeatherCode];
+        } else if (window.currentLanguage === 'fa') {
+            weatherDesc = weatherDescriptionsFa[currentWeatherCode];
+        } else { // 'ku'
+            weatherDesc = weatherDescriptionsKu[currentWeatherCode];
+        }
         
-        let alertText = descriptionText;
+        let alertText = weatherDesc;
         
         if (hasPrecipitation) {
             if (window.currentLanguage === 'en') {
                 alertText += ` | Heavy precipitation expected (${data.daily.precipitation_sum[0]}mm)`;
-            } else {
+            } else if (window.currentLanguage === 'fa') {
                 alertText += ` | بارش شدید پیش‌بینی می‌شود (${data.daily.precipitation_sum[0]} میلی‌متر)`;
+            } else { // 'ku'
+                alertText += ` | بارینێکی بەهێز چاوەڕوان دەکرێت (${data.daily.precipitation_sum[0]} ملم)`;
             }
         }
         
         if (highWinds) {
             if (window.currentLanguage === 'en') {
                 alertText += ` | Strong winds (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m, window.useMetric, window.currentLanguage)})`;
-            } else {
+            } else if (window.currentLanguage === 'fa') {
                 alertText += ` | بادهای شدید (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m, window.useMetric, window.currentLanguage)})`;
+            } else { // 'ku'
+                alertText += ` | بای بەهێز (${formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m, window.useMetric, window.currentLanguage)})`;
             }
         }
         
         // Display alert
-        alertTitle.textContent = window.currentLanguage === 'en' ? "Weather Alert" : "هشدار آب و هوا";
+        alertTitle.textContent = window.currentLanguage === 'en' ? 
+            "Weather Alert" : 
+            window.currentLanguage === 'fa' ? 
+            "هشدار آب و هوا" : 
+            "ئاگاداری کەشوهەوا";
         alertMessage.textContent = alertText;
         
         // Add appropriate actions
@@ -597,12 +630,21 @@ function checkWeatherAlerts(data) {
         alertIcon.className = `${alertInfo.icon} text-xl mr-2 mt-0.5`;
         
         // Create alert message
-        const descriptionText = window.currentLanguage === 'en' ? 
-            weatherDescriptions[currentWeatherCode] : 
-            weatherDescriptionsFa[currentWeatherCode];
+        let descriptionText;
+        if (window.currentLanguage === 'en') {
+            descriptionText = weatherDescriptions[currentWeatherCode];
+        } else if (window.currentLanguage === 'fa') {
+            descriptionText = weatherDescriptionsFa[currentWeatherCode];
+        } else { // 'ku'
+            descriptionText = weatherDescriptionsKu[currentWeatherCode];
+        }
         
         // Display alert
-        alertTitle.textContent = window.currentLanguage === 'en' ? "Weather Alert" : "هشدار آب و هوا";
+        alertTitle.textContent = window.currentLanguage === 'en' ? 
+            "Weather Alert" : 
+            window.currentLanguage === 'fa' ? 
+            "هشدار آب و هوا" : 
+            "ئاگاداری کەشوهەوا";
         alertMessage.textContent = descriptionText;
         
         // Add recommended actions
@@ -649,7 +691,7 @@ function openShareModal() {
     const shareTelegram = document.getElementById('share-telegram');
     
     // Create share URL
-    let shareUrlText = window.location.href.split('?')[0];
+    let shareUrlText = "https://skysenseapp.ir/";
     
     if (currentLocationData.latitude && currentLocationData.longitude) {
         shareUrlText += `?lat=${currentLocationData.latitude}&lon=${currentLocationData.longitude}`;
@@ -660,13 +702,20 @@ function openShareModal() {
     shareUrl.value = shareUrlText;
     
     // Set up social sharing links
-    const weatherDesc = window.currentLanguage === 'en' ? 
-        weatherDescriptions[currentWeatherData.current.weather_code] : 
-        weatherDescriptionsFa[currentWeatherData.current.weather_code];
+    let weatherDesc;
+    if (window.currentLanguage === 'en') {
+        weatherDesc = weatherDescriptions[currentWeatherData.current.weather_code];
+    } else if (window.currentLanguage === 'fa') {
+        weatherDesc = weatherDescriptionsFa[currentWeatherData.current.weather_code];
+    } else { // 'ku'
+        weatherDesc = weatherDescriptionsKu[currentWeatherData.current.weather_code];
+    }
     
     const shareTitle = window.currentLanguage === 'en' ? 
         `Check out the weather in ${currentLocationData.displayName}` : 
-        `آب و هوا در ${currentLocationData.displayName} را ببینید`;
+        window.currentLanguage === 'fa' ?
+        `آب و هوا در ${currentLocationData.displayName} را ببینید` :
+        `کەشوهەوا لە ${currentLocationData.displayName} ببینە`;
     
     const weatherText = encodeURIComponent(`${shareTitle}: ${weatherDesc}, ${document.getElementById('temperature').textContent}`);
     
@@ -771,7 +820,9 @@ function saveCustomLocationName() {
     // Show confirmation
     showToast(window.currentLanguage === 'en' ? 
         "Location name saved" : 
-        "نام مکان ذخیره شد");
+        window.currentLanguage === 'fa' ?
+        "نام مکان ذخیره شد" :
+        "ناوی شوێن هەڵگیرا");
 }
 
 // Toggle favorite status of current location
@@ -967,7 +1018,8 @@ function createTemperatureChart(dailyData) {
                 labels: labels,
                 datasets: [
                     {
-                        label: window.currentLanguage === 'en' ? 'Max Temp' : 'دمای حداکثر',
+                        label: window.currentLanguage === 'en' ? 'Max Temp' : 
+                               window.currentLanguage === 'fa' ? 'دمای حداکثر' : 'پلەی گەرمی بەرزترین',
                         data: maxTemps,
                         borderColor: '#FF6B6B',
                         backgroundColor: 'rgba(255, 107, 107, 0.1)',
@@ -978,7 +1030,8 @@ function createTemperatureChart(dailyData) {
                         pointHoverRadius: 6
                     },
                     {
-                        label: window.currentLanguage === 'en' ? 'Min Temp' : 'دمای حداقل',
+                        label: window.currentLanguage === 'en' ? 'Min Temp' : 
+                               window.currentLanguage === 'fa' ? 'دمای حداقل' : 'پلەی گەرمی نزمترین',
                         data: minTemps,
                         borderColor: '#4ECDC4',
                         backgroundColor: 'rgba(78, 205, 196, 0.1)',
@@ -1114,9 +1167,16 @@ function displayWeatherData(data, locationNameStr) {
         
         // Display current weather
         locationName.textContent = locationNameStr;
-        weatherDescription.textContent = window.currentLanguage === 'en' ? 
-            weatherDescriptions[current.weatherCode] : 
-            weatherDescriptionsFa[current.weatherCode];
+        
+        // Select appropriate weather description based on language
+        if (window.currentLanguage === 'en') {
+            weatherDescription.textContent = weatherDescriptions[current.weatherCode];
+        } else if (window.currentLanguage === 'fa') {
+            weatherDescription.textContent = weatherDescriptionsFa[current.weatherCode];
+        } else { // Kurdish
+            weatherDescription.textContent = weatherDescriptionsKu[current.weatherCode];
+        }
+        
         weatherIconContainer.textContent = weatherIcons[current.weatherCode];
         temperature.textContent = current.temperature;
         feelsLike.textContent = current.feelsLike;
@@ -1160,13 +1220,21 @@ function displayWeatherData(data, locationNameStr) {
             } else {
                 comparisonText = `${formatTemperature(absDiff, window.useMetric)} cooler than the historical average for this time.`;
             }
-        } else {
+        } else if (window.currentLanguage === 'fa') {
             if (absDiff < 2) {
                 comparisonText = `دمای فعلی تقریباً متوسط برای این زمان از سال است.`;
             } else if (diff > 0) {
                 comparisonText = `${formatTemperature(absDiff, window.useMetric)} گرم‌تر از میانگین تاریخی برای این زمان.`;
             } else {
                 comparisonText = `${formatTemperature(absDiff, window.useMetric)} سردتر از میانگین تاریخی برای این زمان.`;
+            }
+        } else { // Kurdish
+            if (absDiff < 2) {
+                comparisonText = `پلەی گەرمی ئێستا نزیکەی تێکڕایە بۆ ئەم کاتە لە ساڵدا.`;
+            } else if (diff > 0) {
+                comparisonText = `${formatTemperature(absDiff, window.useMetric)} گەرمترە لە تێکڕای مێژوویی بۆ ئەم کاتە.`;
+            } else {
+                comparisonText = `${formatTemperature(absDiff, window.useMetric)} ساردترە لە تێکڕای مێژوویی بۆ ئەم کاتە.`;
             }
         }
         
@@ -1225,14 +1293,30 @@ function displayWeatherData(data, locationNameStr) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'flex-shrink-0 w-28 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-center';
                 
-                const precipText = window.currentLanguage === 'en' ? 
-                    (day.precipitation > 0 ? day.precipitation + ' mm' : 'No rain') : 
-                    (day.precipitation > 0 ? day.precipitation + ' میلی‌متر' : 'بدون بارش');
+                // Get appropriate precipitation text based on language
+                let precipText;
+                if (window.currentLanguage === 'en') {
+                    precipText = day.precipitation > 0 ? day.precipitation + ' mm' : 'No rain';
+                } else if (window.currentLanguage === 'fa') {
+                    precipText = day.precipitation > 0 ? day.precipitation + ' میلی‌متر' : 'بدون بارش';
+                } else { // Kurdish
+                    precipText = day.precipitation > 0 ? day.precipitation + ' ملم' : 'بێ باران';
+                }
+                
+                // Get appropriate weather description based on language
+                let weatherDesc;
+                if (window.currentLanguage === 'en') {
+                    weatherDesc = weatherDescriptions[day.weatherCode];
+                } else if (window.currentLanguage === 'fa') {
+                    weatherDesc = weatherDescriptionsFa[day.weatherCode];
+                } else { // Kurdish
+                    weatherDesc = weatherDescriptionsKu[day.weatherCode];
+                }
                 
                 dayElement.innerHTML = `
                     <div class="font-medium text-gray-800 dark:text-white mb-1 truncate">${day.date}</div>
                     <div class="text-2xl mb-1">${weatherIcons[day.weatherCode]}</div>
-                    <div class="text-sm text-gray-600 dark:text-gray-300 truncate">${window.currentLanguage === 'en' ? weatherDescriptions[day.weatherCode] : weatherDescriptionsFa[day.weatherCode]}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 truncate">${weatherDesc}</div>
                     <div class="text-sm text-gray-800 dark:text-white mt-1">${formatTemperature(day.maxTemp, window.useMetric)} / ${formatTemperature(day.minTemp, window.useMetric)}</div>
                     <div class="text-xs text-blue-500 mt-1">${precipText}</div>
                 `;
@@ -1254,6 +1338,8 @@ function displayWeatherData(data, locationNameStr) {
         console.error("Error displaying weather data:", err);
         showError(window.currentLanguage === 'en' ? 
             "Failed to display weather data. Please try again." : 
-            "نمایش اطلاعات آب و هوا با شکست مواجه شد. لطفا دوباره تلاش کنید.");
+            window.currentLanguage === 'fa' ?
+            "نمایش اطلاعات آب و هوا با شکست مواجه شد. لطفا دوباره تلاش کنید." :
+            "نمایشی زانیاری کەشوهەوا سەرکەوتوو نەبوو. تکایە دووبارە هەوڵ بدەوە.");
     }
 }
