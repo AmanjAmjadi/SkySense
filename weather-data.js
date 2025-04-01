@@ -122,6 +122,39 @@ const weatherDescriptionsFa = {
     undefined: "نامشخص"
 };
 
+// Kurdish weather descriptions
+const weatherDescriptionsKu = {
+    0: "ئاسمانی ساف",
+    1: "زۆربەی ساف",
+    2: "کەمێک هەور",
+    3: "هەوراوی",
+    45: "تەم",
+    48: "تەمی بەستوو",
+    51: "باران‌نمەی سووک",
+    53: "باران‌نمەی مامناوەند",
+    55: "باران‌نمەی چڕ",
+    56: "باران‌نمەی بەستووی سووک",
+    57: "باران‌نمەی بەستووی چڕ",
+    61: "بارانی سووک",
+    63: "بارانی مامناوەند",
+    65: "بارانی بەهێز",
+    66: "بارانی بەستووی سووک",
+    67: "بارانی بەستووی بەهێز",
+    71: "بەفری سووک",
+    73: "بەفری مامناوەند",
+    75: "بەفری قورس",
+    77: "دەنکە بەفر",
+    80: "باراناوی سووک",
+    81: "باراناوی مامناوەند",
+    82: "باراناوی بەهێز",
+    85: "بەفراوی سووک",
+    86: "بەفراوی بەهێز",
+    95: "هەورە تریشقە",
+    96: "هەورە تریشقە لەگەڵ تەرزەی سووک",
+    99: "هەورە تریشقە لەگەڵ تەرزەی بەهێز",
+    undefined: "نەزانراو"
+};
+
 // IMPROVED: More detailed weather alert information with recommendations
 const weatherAlertInfo = {
     // Rain alerts
@@ -196,6 +229,22 @@ const weatherAlertActions = {
         snow_risk: { icon: "ti ti-snowflake", text: "برف سنگین ممکن است جاده‌ها را مسدود کند" },
         hail_risk: { icon: "ti ti-ball-baseball", text: "از تگرگ پناه بگیرید" },
         avoid_rivers: { icon: "ti ti-droplet", text: "از رودخانه‌ها و جویبارها دوری کنید" }
+    },
+    // Kurdish actions
+    ku: {
+        carry_umbrella: { icon: "ti ti-umbrella", text: "چەتر لەگەڵ خۆت ببە" },
+        drive_carefully: { icon: "ti ti-car", text: "بە ووریاییەوە بخوڕە" },
+        dress_warmly: { icon: "ti ti-shirt", text: "جلی گەرم و چەند چینی لەبەر بکە" },
+        stay_indoors: { icon: "ti ti-home", text: "ئەگەر دەکرێت لە ماڵەوە بمێنەوە" },
+        avoid_travel: { icon: "ti ti-map", text: "خۆت لە سەفەری ناپێویست بپارێزە" },
+        unplug_electronics: { icon: "ti ti-plug", text: "ئامێرە ئەلیکترۆنییە هەستیارەکان لە پریز دەربێنە" },
+        avoid_trees: { icon: "ti ti-tree", text: "خۆت لە درەخت و شوێنی کراوە بپارێزە" },
+        check_heating: { icon: "ti ti-temperature", text: "سیستەمەکانی گەرمکردنەوە چاک بکە" },
+        flood_risk: { icon: "ti ti-waves", text: "ئاگاداری مەترسی لافاو بە" },
+        ice_risk: { icon: "ti ti-ice-skating", text: "ئاگاداری ڕوو بەستووەکان بە" },
+        snow_risk: { icon: "ti ti-snowflake", text: "بەفری قورس لەوانەیە ڕێگاکان ببەستێت" },
+        hail_risk: { icon: "ti ti-ball-baseball", text: "خۆت لە تەرزە بپارێزە" },
+        avoid_rivers: { icon: "ti ti-droplet", text: "دووربە لە ڕووبار و جۆگەکان" }
     }
 };
 
@@ -244,16 +293,75 @@ function formatTemperature(temp, useMetric) {
     return `${Math.round(temp)}°${useMetric ? 'C' : 'F'}`;
 }
 
+// Shamsi (Persian) calendar conversion functions
+const shamsiMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+const shamsiDays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+
+function gregorianToShamsi(date) {
+    const gregorianYear = date.getFullYear();
+    const gregorianMonth = date.getMonth() + 1;
+    const gregorianDay = date.getDate();
+    
+    let jY, jM, jD;
+    let gregorianDayNo, shamsiDayNo;
+    let leap;
+
+    gregorianYear > 1600 ? (jY = 979, jM = 2, jD = 29) : (jY = 0, jM = 1, jD = 1);
+    gregorianDayNo = 365 * gregorianYear + Math.floor((gregorianYear + 3) / 4) - Math.floor((gregorianYear + 99) / 100) + Math.floor((gregorianYear + 399) / 400);
+    
+    for (let i = 1; i < gregorianMonth; ++i) {
+        gregorianDayNo += [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i];
+    }
+    
+    if (gregorianMonth > 2 && ((gregorianYear % 4 === 0 && gregorianYear % 100 !== 0) || (gregorianYear % 400 === 0))) {
+        ++gregorianDayNo;
+    }
+    
+    gregorianDayNo += gregorianDay;
+    
+    shamsiDayNo = gregorianDayNo - 79;
+    
+    const j_np = Math.floor(shamsiDayNo / 12053);
+    shamsiDayNo %= 12053;
+    
+    jY = 979 + 33 * j_np + 4 * Math.floor(shamsiDayNo / 1461);
+    shamsiDayNo %= 1461;
+    
+    if (shamsiDayNo >= 366) {
+        jY += Math.floor((shamsiDayNo - 1) / 365);
+        shamsiDayNo = (shamsiDayNo - 1) % 365;
+    }
+    
+    for (let i = 0; i < 11 && shamsiDayNo >= 31; ++i) {
+        shamsiDayNo -= i < 6 ? 31 : 30;
+        ++jM;
+    }
+    
+    jD = shamsiDayNo + 1;
+    
+    return {
+        year: jY,
+        month: jM,
+        day: jD,
+        dayOfWeek: date.getDay()
+    };
+}
+
+// Kurdish calendar - using Gregorian with Kurdish month names
+const kurdishMonths = ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران', 'تەمموز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'];
+const kurdishDays = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
+
 // Format date string from ISO date
 function formatDate(dateString, currentLanguage) {
     const date = new Date(dateString);
     
     if (currentLanguage === 'fa') {
-        // Simple Persian date format (not fully accurate but sufficient for this app)
-        const days = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
-        const months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-        // Note: This is a simplified conversion, not accurate for all dates
-        return `${days[date.getDay()]}، ${date.getDate()} ${months[date.getMonth()]}`;
+        // Convert to Shamsi (Persian) date
+        const shamsiDate = gregorianToShamsi(date);
+        return `${shamsiDays[shamsiDate.dayOfWeek]}، ${shamsiDate.day} ${shamsiMonths[shamsiDate.month - 1]}`;
+    } else if (currentLanguage === 'ku') {
+        // Use Kurdish calendar (Gregorian with Kurdish names)
+        return `${kurdishDays[date.getDay()]}، ${date.getDate()} ${kurdishMonths[date.getMonth()]}`;
     } else {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -275,7 +383,16 @@ function formatTime(timeString, currentLanguage) {
         return timeString;
     }
     
-    return date.toLocaleTimeString(currentLanguage === 'fa' ? 'fa-IR' : [], { 
+    // Time formatting is generally the same across languages
+    let locale = 'en-US';
+    if (currentLanguage === 'fa') {
+        locale = 'fa-IR';
+    } else if (currentLanguage === 'ku') {
+        // For Kurdish, we'll use Arabic locale which is close to Kurdish formatting
+        locale = 'ar-IQ';
+    }
+    
+    return date.toLocaleTimeString(locale, { 
         hour: '2-digit', 
         minute: '2-digit' 
     });
@@ -287,20 +404,22 @@ function formatWind(speed, direction, useMetric, currentLanguage) {
     
     if (useMetric) {
         // Converting m/s to km/h
-        formattedSpeed = `${Math.round(speed * 3.6)} ${currentLanguage === 'en' ? 'km/h' : 'کیلومتر/ساعت'}`;
+        formattedSpeed = `${Math.round(speed * 3.6)} ${currentLanguage === 'en' ? 'km/h' : currentLanguage === 'fa' ? 'کیلومتر/ساعت' : 'کیلۆمەتر/کاتژمێر'}`;
     } else {
         // Converting m/s to mph
-        formattedSpeed = `${Math.round(speed * 2.237)} ${currentLanguage === 'en' ? 'mph' : 'مایل/ساعت'}`;
+        formattedSpeed = `${Math.round(speed * 2.237)} ${currentLanguage === 'en' ? 'mph' : currentLanguage === 'fa' ? 'مایل/ساعت' : 'مایل/کاتژمێر'}`;
     }
     
     // Get cardinal direction
-    const directions = currentLanguage === 'en' ? 
-        ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : 
-        ['شمال', 'شمال‌شرق', 'شرق', 'جنوب‌شرق', 'جنوب', 'جنوب‌غرب', 'غرب', 'شمال‌غرب'];
+    const directions = {
+        en: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+        fa: ['شمال', 'شمال‌شرق', 'شرق', 'جنوب‌شرق', 'جنوب', 'جنوب‌غرب', 'غرب', 'شمال‌غرب'],
+        ku: ['باکوور', 'باکووری ڕۆژهەڵات', 'ڕۆژهەڵات', 'باشووری ڕۆژهەڵات', 'باشوور', 'باشووری ڕۆژئاوا', 'ڕۆژئاوا', 'باکووری ڕۆژئاوا']
+    };
     
     const index = Math.round(direction / 45) % 8;
     
-    return `${formattedSpeed} ${directions[index]}`;
+    return `${formattedSpeed} ${directions[currentLanguage][index]}`;
 }
 
 // Fetch weather data with fallback mechanisms
