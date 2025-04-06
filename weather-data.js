@@ -293,74 +293,20 @@ function formatTemperature(temp, useMetric) {
     return `${Math.round(temp)}°${useMetric ? 'C' : 'F'}`;
 }
 
-// Shamsi (Persian) calendar conversion functions
-const shamsiMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-const shamsiDays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
-
-function gregorianToShamsi(date) {
-    const gregorianYear = date.getFullYear();
-    const gregorianMonth = date.getMonth() + 1;
-    const gregorianDay = date.getDate();
-    
-    let jY, jM, jD;
-    let gregorianDayNo, shamsiDayNo;
-    let leap;
-
-    gregorianYear > 1600 ? (jY = 979, jM = 2, jD = 29) : (jY = 0, jM = 1, jD = 1);
-    gregorianDayNo = 365 * gregorianYear + Math.floor((gregorianYear + 3) / 4) - Math.floor((gregorianYear + 99) / 100) + Math.floor((gregorianYear + 399) / 400);
-    
-    for (let i = 1; i < gregorianMonth; ++i) {
-        gregorianDayNo += [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][i];
-    }
-    
-    if (gregorianMonth > 2 && ((gregorianYear % 4 === 0 && gregorianYear % 100 !== 0) || (gregorianYear % 400 === 0))) {
-        ++gregorianDayNo;
-    }
-    
-    gregorianDayNo += gregorianDay;
-    
-    shamsiDayNo = gregorianDayNo - 79;
-    
-    const j_np = Math.floor(shamsiDayNo / 12053);
-    shamsiDayNo %= 12053;
-    
-    jY = 979 + 33 * j_np + 4 * Math.floor(shamsiDayNo / 1461);
-    shamsiDayNo %= 1461;
-    
-    if (shamsiDayNo >= 366) {
-        jY += Math.floor((shamsiDayNo - 1) / 365);
-        shamsiDayNo = (shamsiDayNo - 1) % 365;
-    }
-    
-    for (let i = 0; i < 11 && shamsiDayNo >= 31; ++i) {
-        shamsiDayNo -= i < 6 ? 31 : 30;
-        ++jM;
-    }
-    
-    jD = shamsiDayNo + 1;
-    
-    return {
-        year: jY,
-        month: jM,
-        day: jD,
-        dayOfWeek: date.getDay()
-    };
-}
-
-// Kurdish calendar - using Gregorian with Kurdish month names
-const kurdishMonths = ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران', 'تەمموز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'];
-const kurdishDays = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
-
 // Format date string from ISO date
 function formatDate(dateString, currentLanguage) {
     const date = new Date(dateString);
     
+    // For all languages, use Gregorian calendar with translated month/day names
     if (currentLanguage === 'fa') {
-        // Convert to Shamsi (Persian) date
-        const shamsiDate = gregorianToShamsi(date);
-        return `${shamsiDays[shamsiDate.dayOfWeek]}، ${shamsiDate.day} ${shamsiMonths[shamsiDate.month - 1]}`;
+        // Persian month names in Gregorian calendar
+        const persianMonths = ['ژانویه', 'فوریه', 'مارس', 'آوریل', 'مه', 'ژوئن', 'ژوئیه', 'اوت', 'سپتامبر', 'اکتبر', 'نوامبر', 'دسامبر'];
+        const persianDays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+        return `${persianDays[date.getDay()]}، ${date.getDate()} ${persianMonths[date.getMonth()]}`;
     } else if (currentLanguage === 'ku') {
-        // Use Kurdish calendar (Gregorian with Kurdish names)
+        // Kurdish month names in Gregorian calendar
+        const kurdishMonths = ['ژانویە', 'فێبریوەری', 'مارس', 'ئەپریل', 'مەی', 'جوون', 'جولای', 'ئۆگەست', 'سێپتەمبەر', 'ئۆکتۆبەر', 'نۆڤەمبەر', 'دیسەمبەر'];
+        const kurdishDays = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
         return `${kurdishDays[date.getDay()]}، ${date.getDate()} ${kurdishMonths[date.getMonth()]}`;
     } else {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
