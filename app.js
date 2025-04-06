@@ -16,14 +16,16 @@ window.userPreferences = {
     dismissedAlerts: []
 };
 
-// Detect if running in WebView
+// Detect if running in WebView with improved detection
 window.isWebView = (function() {
     // Various ways to detect WebView
     const userAgent = navigator.userAgent.toLowerCase();
+    console.log("User Agent:", userAgent); // Debug user agent
     
-    // Check for common WebView indicators
+    // More comprehensive WebView detection
     return userAgent.indexOf('wv') > -1 || // Android WebView
            userAgent.indexOf('flutter') > -1 || // Flutter WebView
+           /android.+webview|wv/.test(userAgent) || // More generic Android WebView
            window.navigator.standalone || // iOS standalone mode (from homescreen)
            window.matchMedia('(display-mode: standalone)').matches;
 })();
@@ -79,7 +81,9 @@ function showWebViewLocationHelp() {
     locationHelper.addEventListener('click', function() {
         showToast(window.currentLanguage === 'en' ? 
             "Attempting to access your location. Please allow permission if prompted." : 
-            "در حال تلاش برای دسترسی به موقعیت شما. لطفاً در صورت درخواست، اجازه دهید.");
+            window.currentLanguage === 'fa' ? 
+            "در حال تلاش برای دسترسی به موقعیت شما. لطفاً در صورت درخواست، اجازه دهید." :
+            "هەوڵی دەستگەیشتن بە شوێنی تۆ دەدات. تکایە ڕێگەی پێ بدە ئەگەر داوات لێکرا.");
         getUserLocation(false, true); // Force location request
     });
     document.body.appendChild(locationHelper);
@@ -283,8 +287,8 @@ function setLanguage(lang) {
     // Update language selector
     updateLanguageSelector(lang);
     
-    // Set RTL for Persian
-    if (lang === 'fa') {
+    // Set RTL for Persian and Kurdish
+    if (lang === 'fa' || lang === 'ku') {
         document.body.setAttribute('dir', 'rtl');
     } else {
         document.body.setAttribute('dir', 'ltr');
@@ -314,6 +318,14 @@ function setLanguage(lang) {
 // Check URL parameters for location permission
 function checkLocationPermissionParameters() {
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check for language parameter
+    if (urlParams.has('lang')) {
+        const lang = urlParams.get('lang');
+        if (['en', 'fa', 'ku'].includes(lang)) {
+            setLanguage(lang);
+        }
+    }
     
     // Check if loading with location permission
     if (urlParams.has('useLocation') && urlParams.get('useLocation') === 'true') {
@@ -347,11 +359,15 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
     if ('geolocation' in navigator) {
         const loadingMsg = window.currentLanguage === 'en' ? 
             'Getting your location...' : 
-            'در حال دریافت موقعیت شما...';
+            window.currentLanguage === 'fa' ?
+            'در حال دریافت موقعیت شما...' :
+            'شوێنەکەت وەردەگرین...';
         
         const permissionMsg = window.currentLanguage === 'en' ? 
             'Please allow location access when prompted' : 
-            'لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید';
+            window.currentLanguage === 'fa' ?
+            'لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید' :
+            'تکایە کاتێک داوات لێدەکرێت، ڕێگە بدە بە دەستگەیشتن بە شوێن';
         
         if (!fromMapButton) {
             showLoading(loadingMsg);
@@ -376,32 +392,36 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
                 maximumAge: 0
             };
             
-            // Some WebViews need extra handling for location permission
-            if (window.isWebView) {
-                console.log("Using WebView geolocation approach");
+            // Debug message for location request
+            console.log("Requesting location with options:", geolocationOptions);
+            console.log("WebView status:", window.isWebView ? "Running in WebView" : "Not in WebView");
+            
+            // Special WebView handling - in some WebViews we want to display a message
+            // but only if it's not a forced request (which comes from the help button)
+            if (window.isWebView && !forceRequest) {
+                console.log("In WebView without force request - showing helper UI");
                 
-                // Add a timeout to allow the WebView to get permissions
-                if (!forceRequest) {
-                    // If this is the first attempt and not forcing, show a message
-                    showToast(window.currentLanguage === 'en' ? 
-                        "Tap the location button below to get weather for your location" : 
-                        "برای دریافت آب و هوای موقعیت خود، روی دکمه موقعیت در پایین ضربه بزنید", 5000);
-                    
-                    clearTimeout(geolocationTimeout);
-                    if (!fromMapButton) {
-                        hideLoading();
-                        getWeatherByLocationName('New York'); // Start with default city
-                    }
-                    return;
+                // Show a toast with instructions
+                showToast(window.currentLanguage === 'en' ? 
+                    "Tap the location button below to get weather for your location" : 
+                    window.currentLanguage === 'fa' ?
+                    "برای دریافت آب و هوای موقعیت خود، روی دکمه موقعیت در پایین ضربه بزنید" :
+                    "بۆ وەرگرتنی کەشوهەوای شوێنەکەت، دەستبنێ بە دوگمەی شوێن لە خوارەوە", 5000);
+                
+                clearTimeout(geolocationTimeout);
+                if (!fromMapButton) {
+                    hideLoading();
+                    getWeatherByLocationName('New York'); // Start with default city
                 }
+                return;
             }
             
+            // Actual location request
             navigator.geolocation.getCurrentPosition(
                 position => {
                     clearTimeout(geolocationTimeout);
+                    console.log("Successfully got location:", position.coords);
                     const { latitude, longitude } = position.coords;
-                    
-                    console.log("Successfully got location:", latitude, longitude);
                     
                     // Save coordinates for later use
                     window.userCoordinates = { latitude, longitude };
@@ -419,7 +439,9 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
                         // For current location, we'll use a friendly name
                         const displayName = window.currentLanguage === 'en' ? 
                             'Your Location' : 
-                            'موقعیت شما';
+                            window.currentLanguage === 'fa' ?
+                            'موقعیت شما' :
+                            'شوێنی تۆ';
                         
                         // Get weather for the detected coordinates
                         getWeatherByCoordinates(latitude, longitude, displayName);
@@ -428,13 +450,28 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
                         setTimeout(() => {
                             showToast(window.currentLanguage === 'en' ? 
                                 "Tip: You can rename this location by clicking the pencil icon" : 
-                                "نکته: می‌توانید با کلیک روی آیکون مداد، نام این مکان را تغییر دهید", 5000);
+                                window.currentLanguage === 'fa' ?
+                                "نکته: می‌توانید با کلیک روی آیکون مداد، نام این مکان را تغییر دهید" :
+                                "تێبینی: دەتوانیت ناوی ئەم شوێنە بگۆڕیت بە کرتەکردن لەسەر ئایکۆنی قەڵەم", 5000);
                         }, 2000);
                     }
                 }, 
                 error => {
                     clearTimeout(geolocationTimeout);
                     console.error("Geolocation error:", error);
+                    console.log("Error code:", error.code);
+                    console.log("Error message:", error.message);
+                    
+                    // More detailed error logging for WebView
+                    if (window.isWebView) {
+                        console.log("WebView geolocation error details:", JSON.stringify({
+                            code: error.code,
+                            message: error.message,
+                            PERMISSION_DENIED: error.PERMISSION_DENIED,
+                            POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+                            TIMEOUT: error.TIMEOUT
+                        }));
+                    }
                     
                     if (!fromMapButton) {
                         hideLoading();
@@ -445,27 +482,60 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
                             case error.PERMISSION_DENIED:
                                 errorMessage = window.currentLanguage === 'en' ? 
                                     "Location access denied. Please search for a location instead." : 
-                                    "دسترسی به موقعیت رد شد. لطفاً به جای آن یک مکان را جستجو کنید.";
+                                    window.currentLanguage === 'fa' ?
+                                    "دسترسی به موقعیت رد شد. لطفاً به جای آن یک مکان را جستجو کنید." :
+                                    "دەستگەیشتن بە شوێن ڕەتکرایەوە. تکایە لە جیاتی ئەوە شوێنێک بگەڕێ.";
                                 break;
                             case error.POSITION_UNAVAILABLE:
                                 errorMessage = window.currentLanguage === 'en' ? 
                                     "Location information is unavailable. Please search for a location." : 
-                                    "اطلاعات موقعیت در دسترس نیست. لطفاً یک مکان را جستجو کنید.";
+                                    window.currentLanguage === 'fa' ?
+                                    "اطلاعات موقعیت در دسترس نیست. لطفاً یک مکان را جستجو کنید." :
+                                    "زانیاری شوێن بەردەست نییە. تکایە شوێنێک بگەڕێ.";
                                 break;
                             case error.TIMEOUT:
                                 errorMessage = window.currentLanguage === 'en' ? 
                                     "Location request timed out. Please search for a location." : 
-                                    "درخواست موقعیت به پایان رسید. لطفاً یک مکان را جستجو کنید.";
+                                    window.currentLanguage === 'fa' ?
+                                    "درخواست موقعیت به پایان رسید. لطفاً یک مکان را جستجو کنید." :
+                                    "داواکاری شوێن کاتی بەسەرچوو. تکایە شوێنێک بگەڕێ.";
                                 break;
                             default:
                                 errorMessage = window.currentLanguage === 'en' ? 
                                     "An unknown error occurred. Please search for a location." : 
-                                    "خطای ناشناخته رخ داد. لطفاً یک مکان را جستجو کنید.";
+                                    window.currentLanguage === 'fa' ?
+                                    "خطای ناشناخته رخ داد. لطفاً یک مکان را جستجو کنید." :
+                                    "هەڵەیەکی نەناسراو ڕوویدا. تکایە شوێنێک بگەڕێ.";
                         }
                         showError(errorMessage);
                         
                         // Load a default location
                         getWeatherByLocationName('New York');
+                    } else {
+                        // If from map button, show a toast instead of an error message
+                        let toastMessage;
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                toastMessage = window.currentLanguage === 'en' ? 
+                                    "Location access denied. Please enable location in your device settings." : 
+                                    window.currentLanguage === 'fa' ?
+                                    "دسترسی به موقعیت رد شد. لطفاً مکان‌یابی را در تنظیمات دستگاه خود فعال کنید." :
+                                    "دەستگەیشتن بە شوێن ڕەتکرایەوە. تکایە شوێن لە ڕێکخستنەکانی ئامێرەکەت چالاک بکە.";
+                                break;
+                            default:
+                                toastMessage = window.currentLanguage === 'en' ? 
+                                    "Couldn't get your location. Please check device settings." : 
+                                    window.currentLanguage === 'fa' ?
+                                    "نمی‌توان موقعیت شما را دریافت کرد. لطفاً تنظیمات دستگاه را بررسی کنید." :
+                                    "نەتوانرا شوێنەکەت وەربگیرێت. تکایە ڕێکخستنەکانی ئامێرەکەت بپشکنە.";
+                        }
+                        showToast(toastMessage, 5000);
+                        
+                        // Reset the location button if it exists
+                        if (locationButton) {
+                            locationButton.innerHTML = '<i class="ti ti-current-location"></i>';
+                            locationButton.style.pointerEvents = 'auto';
+                        }
                     }
                 },
                 geolocationOptions
@@ -484,10 +554,18 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
             hideLoading();
             showError(window.currentLanguage === 'en' ? 
                 "Your browser doesn't support geolocation. Please search for a location." : 
-                "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند. لطفاً یک مکان را جستجو کنید.");
+                window.currentLanguage === 'fa' ?
+                "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند. لطفاً یک مکان را جستجو کنید." :
+                "وێبگەڕەکەت پشتگیری دۆزینەوەی شوێن ناکات. تکایە شوێنێک بگەڕێ.");
             
             // Load a default location
             getWeatherByLocationName('New York');
+        } else {
+            showToast(window.currentLanguage === 'en' ? 
+                "Your browser doesn't support geolocation" : 
+                window.currentLanguage === 'fa' ?
+                "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند" :
+                "وێبگەڕەکەت پشتگیری دۆزینەوەی شوێن ناکات");
         }
     }
 }
@@ -496,7 +574,9 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
 async function getWeatherByLocationName(locationName) {
     const loadingMsg = window.currentLanguage === 'en' ? 
         "Finding location..." : 
-        "در حال یافتن مکان...";
+        window.currentLanguage === 'fa' ?
+        "در حال یافتن مکان..." :
+        "شوێن دەدۆزرێتەوە...";
     
     showLoading(loadingMsg);
     
@@ -509,7 +589,9 @@ async function getWeatherByLocationName(locationName) {
         
         const weatherLoadingMsg = window.currentLanguage === 'en' ? 
             "Getting weather data..." : 
-            "در حال دریافت داده‌های آب و هوا...";
+            window.currentLanguage === 'fa' ?
+            "در حال دریافت داده‌های آب و هوا..." :
+            "زانیارییەکانی کەشوهەوا دەهێنرێت...";
         
         showLoading(weatherLoadingMsg);
         
@@ -542,7 +624,9 @@ async function getWeatherByLocationName(locationName) {
 async function getWeatherByCoordinates(latitude, longitude, displayName) {
     const loadingMsg = window.currentLanguage === 'en' ? 
         "Getting weather data..." : 
-        "در حال دریافت داده‌های آب و هوا...";
+        window.currentLanguage === 'fa' ?
+        "در حال دریافت داده‌های آب و هوا..." :
+        "زانیارییەکانی کەشوهەوا دەهێنرێت...";
     
     showLoading(loadingMsg);
     
