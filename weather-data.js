@@ -250,6 +250,116 @@ const weatherAlertActions = {
 
 // API Status Detection
 let isIranianIP = false;
+// Add at the top of the file after weather icons/descriptions
+const weatherCache = new Map();
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+// Add at the top, after cache implementation
+const errorMessages = {
+    'network_error': {
+        'en': "Network connection issue. Please check your connection and try again.",
+        'fa': "مشکل اتصال به شبکه. لطفاً اتصال خود را بررسی کرده و دوباره امتحان کنید.",
+        'ku': "کێشەی پەیوەندی تۆڕ. تکایە پەیوەندیەکەت بپشکنە و دووبارە هەوڵ بدەوە."
+    },
+    'location_not_found': {
+        'en': "Location not found. Please try a different location.",
+        'fa': "مکان پیدا نشد. لطفاً مکان دیگری را امتحان کنید.",
+        'ku': "شوێن نەدۆزرایەوە. تکایە شوێنێکی جیاواز تاقی بکەوە."
+    },
+    'api_limit': {
+        'en': "Weather service is busy. Please try again in a moment.",
+        'fa': "سرویس آب و هوا مشغول است. لطفاً چند لحظه دیگر دوباره امتحان کنید.",
+        'ku': "خزمەتگوزاری کەشوهەوا سەرقاڵە. تکایە دوای چەند چرکەیەک دووبارە هەوڵ بدەوە."
+    },
+    'unknown_error': {
+        'en': "An unexpected error occurred. Please try again.",
+        'fa': "خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره امتحان کنید.",
+        'ku': "هەڵەیەکی چاوەڕواننەکراو ڕوویدا. تکایە دووبارە هەوڵ بدەوە."
+    }
+};
+
+
+// Add this helper function for retrying API calls
+async function fetchWithRetry(url, options = {}, maxRetries = 2) {
+    let lastError;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fetchWithTimeout(url, options);
+        } catch (error) {
+            console.log(`Attempt ${attempt + 1} failed:`, error.message);
+            lastError = error;
+            
+            // If it's the last attempt, don't wait
+            if (attempt === maxRetries) break;
+            
+            // Add exponential backoff between retries
+            const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s...
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    throw lastError;
+}
+
+// Then use this in your API calls:
+// const response = await fetchWithRetry(url, { timeout: 5000 }, 2);
+
+
+function getLocalizedErrorMessage(errorType, fallbackMessage) {
+    const messages = errorMessages[errorType];
+    if (messages && messages[window.currentLanguage]) {
+        return messages[window.currentLanguage];
+    }
+    return fallbackMessage;
+}
+
+// Then update error handling in fetch functions, e.g.:
+try {
+    // API call...
+} catch (error) {
+    console.error("API error:", error);
+    
+    if (error.message.includes("timeout") || error.message.includes("network")) {
+        throw new Error(getLocalizedErrorMessage('network_error', error.message));
+    } else if (error.message.includes("not found")) {
+        throw new Error(getLocalizedErrorMessage('location_not_found', error.message));
+    } else {
+        throw new Error(getLocalizedErrorMessage('unknown_error', error.message));
+    }
+}
+// Create a new function for cached data fetch
+async function fetchWeatherDataCached(latitude, longitude) {
+    // Create a cache key based on coordinates (rounded to reduce variations)
+    const cacheKey = `${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+    
+    // Check if we have cached data less than 30 minutes old
+    if (weatherCache.has(cacheKey)) {
+        const { data, timestamp } = weatherCache.get(cacheKey);
+        const cacheAge = Date.now() - timestamp;
+        
+        if (cacheAge < CACHE_DURATION) {
+            console.log("Using cached weather data");
+            return data;
+        }
+    }
+    
+    // Fetch fresh data
+    const data = await fetchWeatherData(latitude, longitude);
+    
+    // Cache the result
+    weatherCache.set(cacheKey, {
+        data,
+        timestamp: Date.now()
+    });
+    
+    return data;
+}
+
+// No need to modify the original fetchWeatherData function
+// Just use fetchWeatherDataCached in getWeatherByCoordinates and similar functions
+
+
 
 // Function to detect region by testing API connectivity
 async function checkRegion() {
