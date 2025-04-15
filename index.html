@@ -8,18 +8,26 @@
     <meta name="description" content="Get accurate weather forecasts, real-time updates, severe weather alerts, and hourly predictions for any location worldwide. Plan your day with SkySense Weather!">
     <meta name="keywords" content="weather, forecast, weather app, weather alerts, hourly forecast, temperature, rain, snow, wind, humidity, UV index, climate, weather report, weather radar, current weather">
     
+    <!-- Security: Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdn.datatables.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; img-src 'self' https://cdn-icons-png.flaticon.com https://upload.wikimedia.org https://cdn.jsdelivr.net https://*.openstreetmap.org https://*.tile.openstreetmap.org data:; connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.openweathermap.org https://*.tile.openstreetmap.org;">
+    
+    <!-- PWA Support -->
+    <meta name="theme-color" content="#5D5CDE">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
     <!-- Open Graph tags for social sharing -->
     <meta property="og:title" content="SkySense Weather - Accurate Weather Forecasts">
     <meta property="og:description" content="Get real-time weather forecasts, alerts, and hourly predictions for any location worldwide. Plan your day with confidence!">
     <meta property="og:url" content="https://skysenseapp.ir/">
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://skysenseapp.ir/icon.png">
+    <meta property="og:image" content="https://skysenseapp.ir/icons/og-image.jpg">
     
     <!-- Twitter Card data -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SkySense Weather - Accurate Forecasts">
     <meta name="twitter:description" content="Get real-time weather forecasts and alerts for any location">
-    <meta name="twitter:image" content="https://skysenseapp.ir/icon.png">
+    <meta name="twitter:image" content="https://skysenseapp.ir/icons/og-image.jpg">
     
     <!-- Mobile app capability -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -72,6 +80,9 @@
                 extend: {
                     colors: {
                         primary: '#5D5CDE',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -87,26 +98,26 @@
             <div class="flex items-center gap-3">
                 <!-- Language Selector -->
                 <div class="lang-selector" id="lang-selector">
-                    <div class="lang-selector-current">
+                    <div class="lang-selector-current" aria-label="Change language" role="button" tabindex="0">
                         <div class="lang-selector-flag">
                             <img src="https://cdn-icons-png.flaticon.com/512/323/323310.png" alt="English" id="current-lang-flag">
                         </div>
                         <span id="current-lang-name">EN</span>
                     </div>
-                    <div class="lang-selector-options" id="lang-options">
-                        <div class="lang-option active" data-lang="en">
+                    <div class="lang-selector-options" id="lang-options" role="menu">
+                        <div class="lang-option active" data-lang="en" role="menuitem" tabindex="0">
                             <div class="lang-selector-flag">
                                 <img src="https://cdn-icons-png.flaticon.com/512/323/323310.png" alt="English">
                             </div>
                             <span>English</span>
                         </div>
-                        <div class="lang-option" data-lang="fa">
+                        <div class="lang-option" data-lang="fa" role="menuitem" tabindex="0">
                             <div class="lang-selector-flag">
                                 <img src="https://cdn-icons-png.flaticon.com/512/330/330549.png" alt="Persian">
                             </div>
                             <span>فارسی</span>
                         </div>
-                        <div class="lang-option" data-lang="ku">
+                        <div class="lang-option" data-lang="ku" role="menuitem" tabindex="0">
                             <div class="lang-selector-flag">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Flag_of_Kurdistan.svg/240px-Flag_of_Kurdistan.svg.png" alt="Kurdish">
                             </div>
@@ -119,7 +130,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-gray-700 dark:text-gray-300" data-en="°C" data-fa="°C" data-ku="°C">°C</span>
                     <div class="relative inline-block">
-                        <input type="checkbox" id="unit-toggle" class="toggle-checkbox" />
+                        <input type="checkbox" id="unit-toggle" class="toggle-checkbox" aria-label="Toggle temperature unit" />
                         <label for="unit-toggle" class="toggle-label">
                             <span class="toggle-button"></span>
                         </label>
@@ -128,15 +139,25 @@
                 </div>
                 
                 <!-- Settings Button -->
-                <button id="settings-button" class="ml-2 p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                <button id="settings-button" class="ml-2 p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" aria-label="Settings">
                     <i class="ti ti-settings text-xl"></i>
                 </button>
             </div>
         </div>
         
+        <!-- Offline Alert Banner -->
+        <div id="offline-alert" class="hidden relative border-l-4 border-yellow-400 p-4 bg-yellow-50 dark:bg-yellow-900 dark:border-yellow-600 text-yellow-700 dark:text-yellow-100 rounded-lg mb-4">
+            <div class="flex items-center">
+                <i class="ti ti-wifi-off text-xl mr-2"></i>
+                <div>
+                    <p data-en="You are offline. Some features may be limited." data-fa="شما آفلاین هستید. برخی از ویژگی‌ها ممکن است محدود باشند." data-ku="تۆ ئۆفلاینیت. هەندێک تایبەتمەندی لەوانەیە سنووردار بن.">You are offline. Some features may be limited.</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- Weather Alerts Container (IMPROVED) -->
         <div id="alerts-container" class="hidden relative border-l-4 p-4 rounded-lg mb-4 pulse-alert">
-            <button id="dismiss-alert" class="alert-dismiss">
+            <button id="dismiss-alert" class="alert-dismiss" aria-label="Dismiss alert">
                 <i class="ti ti-x"></i>
             </button>
             <div class="flex items-start">
@@ -165,11 +186,11 @@
         <!-- Search and Map Container -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg search-container mb-6">
             <div class="flex border-b dark:border-gray-700">
-                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" data-en="Search Location" data-fa="جستجوی مکان" data-ku="گەڕان بۆ شوێن">Search Location</button>
-                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه" data-ku="دیاریکردن لەسەر نەخشە">Pin on Map</button>
+                <button id="searchTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium active" role="tab" aria-selected="true" data-en="Search Location" data-fa="جستجوی مکان" data-ku="گەڕان بۆ شوێن">Search Location</button>
+                <button id="mapTab" class="location-tab flex-1 py-3 text-center text-gray-800 dark:text-white font-medium" role="tab" aria-selected="false" data-en="Pin on Map" data-fa="نشانه‌گذاری روی نقشه" data-ku="دیاریکردن لەسەر نەخشە">Pin on Map</button>
             </div>
             
-            <div id="searchPanel" class="p-6 pb-24">
+            <div id="searchPanel" class="p-6 pb-24" role="tabpanel" aria-labelledby="searchTab">
                 <div id="autocompleteContainer">
                     <form id="weatherForm" class="flex flex-col md:flex-row gap-2">
                         <div class="flex-1 relative">
@@ -182,9 +203,10 @@
                                 data-placeholder-ku="شار، چیا، بیابان، دووری دەریا..."
                                 class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white"
                                 autocomplete="off"
+                                aria-label="Enter location"
                                 required
                             >
-                            <div id="autocomplete-list"></div>
+                            <div id="autocomplete-list" role="listbox" class="autocomplete-dropdown"></div>
                         </div>
                         <button 
                             type="submit" 
@@ -194,10 +216,16 @@
                         </button>
                     </form>
                 </div>
+                
+                <!-- Recent Searches -->
+                <div id="recent-searches" class="mt-4 hidden">
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-en="Recent Searches" data-fa="جستجوهای اخیر" data-ku="گەڕانە نوێیەکان">Recent Searches</h4>
+                    <div id="recent-searches-list" class="flex flex-wrap gap-2"></div>
+                </div>
             </div>
             
-            <div id="mapPanel" class="hidden p-4">
-                <div id="map" class="mb-4">
+            <div id="mapPanel" class="hidden p-4" role="tabpanel" aria-labelledby="mapTab">
+                <div id="map" class="mb-4" aria-label="Interactive map">
                     <!-- Location Button will be added here by JS -->
                 </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3" data-en="Click anywhere on the map to get weather for that exact location (mountains, deserts, seas, etc.)." data-fa="برای دریافت آب و هوای دقیق هر مکان (کوه، بیابان، دریا و غیره) روی نقشه کلیک کنید." data-ku="کلیک لە هەر شوێنێک بکە لەسەر نەخشەکە بۆ وەرگرتنی کەشوهەوای ئەو شوێنە دیاریکراوە (چیاکان، بیابانەکان، دەریاکان، هتد).">
@@ -209,7 +237,7 @@
                 </div>
                 <button 
                     id="getWeatherForLocation" 
-                    class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                    class="w-full px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled
                     data-en="Get Weather"
                     data-fa="دریافت آب و هوا"
@@ -220,11 +248,58 @@
             </div>
         </div>
         
+        <!-- Loading Container with Improved Animations -->
         <div id="loadingContainer" class="flex justify-center items-center py-10">
             <div class="text-center">
                 <div class="loading-spinner mx-auto mb-4"></div>
                 <p class="text-gray-700 dark:text-gray-300" id="loadingText" data-en="Getting your location..." data-fa="در حال دریافت موقعیت شما..." data-ku="شوێنەکەت وەردەگرین...">Getting your location...</p>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="permissionText" data-en="Please allow location access when prompted" data-fa="لطفاً هنگام درخواست، اجازه دسترسی به موقعیت مکانی را بدهید" data-ku="تکایە کاتێک داوات لێدەکرێت، ڕێگە بدە بە دەستگەیشتن بە شوێن">Please allow location access when prompted</p>
+            </div>
+        </div>
+
+        <!-- Skeleton Loader -->
+        <div id="skeleton-loader" class="hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4 animate-pulse">
+                <div class="h-8 bg-gray-200 dark:bg-gray-700 mx-4 mt-4 rounded"></div>
+                <div class="p-6 flex flex-col md:flex-row items-center gap-4">
+                    <div class="h-16 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                    <div class="flex-1 w-full">
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 mb-3 rounded w-3/4"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hourly forecast skeleton -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4 animate-pulse">
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 mx-4 my-4 rounded w-1/3"></div>
+                <div class="p-4 overflow-x-auto">
+                    <div class="flex gap-3">
+                        <div class="flex-shrink-0 w-16 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-16 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-16 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-16 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-16 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 7-day forecast skeleton -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4 animate-pulse">
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 mx-4 my-4 rounded w-1/3"></div>
+                <div class="p-4">
+                    <div class="h-48 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                    <div class="flex gap-3 overflow-x-auto">
+                        <div class="flex-shrink-0 w-28 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-28 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div class="flex-shrink-0 w-28 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -234,16 +309,24 @@
                 <div class="flex justify-between items-start px-4 pt-4">
                     <h2 id="locationName" class="text-2xl font-bold text-gray-800 dark:text-white"></h2>
                     <div class="flex items-center gap-2">
-                        <button id="rename-location" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" title="Rename location">
+                        <button id="rename-location" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" title="Rename location" aria-label="Rename location">
                             <i class="ti ti-pencil text-xl"></i>
                         </button>
-                        <button id="share-button" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        <button id="share-button" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" aria-label="Share weather information">
                             <i class="ti ti-share text-xl"></i>
                         </button>
-                        <button id="favorite-button" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        <button id="favorite-button" class="p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" aria-label="Add to favorites">
                             <i class="ti ti-star text-xl"></i>
                         </button>
                     </div>
+                </div>
+                
+                <!-- Last Updated Time -->
+                <div class="px-4 pt-1">
+                    <p class="text-xs text-gray-500 dark:text-gray-400" id="last-updated">
+                        <span data-en="Updated: " data-fa="بروزرسانی: " data-ku="نوێکراوەتەوە: ">Updated: </span>
+                        <span id="update-time"></span>
+                    </p>
                 </div>
                 
                 <div id="weatherHeader" class="p-6 flex flex-col md:flex-row items-center gap-4">
@@ -273,7 +356,7 @@
                 
                 <!-- Expandable Weather Details -->
                 <div class="px-6 pb-4">
-                    <button id="details-toggle" class="w-full flex justify-between items-center text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary focus:outline-none transition-colors">
+                    <button id="details-toggle" class="w-full flex justify-between items-center text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary focus:outline-none transition-colors" aria-expanded="false" aria-controls="details-content">
                         <span class="font-medium" data-en="Weather Details" data-fa="جزئیات آب و هوا" data-ku="وردەکاری کەشوهەوا">Weather Details</span>
                         <i class="ti ti-chevron-down transition-transform duration-200"></i>
                     </button>
@@ -283,22 +366,30 @@
                             <div class="text-center">
                                 <p class="text-sm text-gray-500 dark:text-gray-400" data-en="UV Index" data-fa="شاخص UV" data-ku="پێوەری UV">UV Index</p>
                                 <p id="uv-index" class="text-lg font-medium text-gray-800 dark:text-white"></p>
+                                <div id="uv-scale" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                                    <div id="uv-indicator" class="h-full rounded-full" style="width: 0%; background-color: #4ade80;"></div>
+                                </div>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Precipitation" data-fa="بارش" data-ku="بارین">Precipitation</p>
                                 <p id="precipitation" class="text-lg font-medium text-gray-800 dark:text-white"></p>
+                                <div id="rain-scale" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                                    <div id="rain-indicator" class="h-full bg-blue-500 rounded-full" style="width: 0%;"></div>
+                                </div>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunrise" data-fa="طلوع آفتاب" data-ku="هەڵاتنی خۆر">Sunrise</p>
                                 <p id="sunrise" class="text-lg font-medium text-gray-800 dark:text-white"></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><i class="ti ti-sunrise"></i></p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500 dark:text-gray-400" data-en="Sunset" data-fa="غروب آفتاب" data-ku="ئاوابوونی خۆر">Sunset</p>
                                 <p id="sunset" class="text-lg font-medium text-gray-800 dark:text-white"></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><i class="ti ti-sunset"></i></p>
                             </div>
                         </div>
                         
-                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Wind Direction" data-fa="جهت باد" data-ku="ئاراستەی با">Wind Direction</p>
                                 <div id="wind-compass" class="compass">
@@ -316,6 +407,23 @@
                                 <div id="historical-comparison" class="text-center px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <p id="historical-text" class="text-sm text-gray-700 dark:text-gray-300" data-en="Loading historical data..." data-fa="در حال بارگذاری داده‌های تاریخی..." data-ku="زانیاری مێژوویی بار دەکرێت...">Loading historical data...</p>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Air Quality Section (NEW) -->
+                        <div class="mt-6">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 text-center" data-en="Air Quality" data-fa="کیفیت هوا" data-ku="کوالێتی هەوا">Air Quality</p>
+                            <div id="air-quality-container" class="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-300" data-en="Not available" data-fa="در دسترس نیست" data-ku="بەردەست نییە">Not available</span>
+                                    <div class="flex-1 mx-4">
+                                        <div class="w-full h-3 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                                            <div id="air-quality-indicator" class="h-full bg-green-500" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <span id="air-quality-value" class="text-sm font-bold text-gray-800 dark:text-white">--</span>
+                                </div>
+                                <p id="air-quality-text" class="text-xs text-center mt-1 text-gray-600 dark:text-gray-400"></p>
                             </div>
                         </div>
                     </div>
@@ -337,13 +445,19 @@
             
             <!-- 7-Day Forecast with Temperature Graph -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-6">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white" data-en="7-Day Forecast" data-fa="پیش‌بینی ۷ روزه" data-ku="پێشبینی ٧ ڕۆژ">7-Day Forecast</h3>
+                    
+                    <!-- Chart Type Toggle -->
+                    <div class="flex items-center gap-2">
+                        <button id="chart-temp-btn" class="text-xs px-2 py-1 bg-primary text-white rounded-md" data-en="Temp" data-fa="دما" data-ku="پلە">Temp</button>
+                        <button id="chart-precip-btn" class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md" data-en="Precip" data-fa="بارش" data-ku="بارین">Precip</button>
+                    </div>
                 </div>
                 
                 <div class="p-4">
                     <div class="mb-4 h-48">
-                        <canvas id="temperatureChart"></canvas>
+                        <canvas id="weatherChart"></canvas>
                     </div>
                     
                     <div class="forecast-container pb-2">
@@ -357,7 +471,18 @@
         </div>
         
         <div id="errorContainer" class="hidden bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 p-4 rounded-lg mt-4">
-            <p id="errorMessage"></p>
+            <div class="flex items-center">
+                <i class="ti ti-alert-circle text-xl mr-2"></i>
+                <p id="errorMessage"></p>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+                <button id="retry-btn" class="px-3 py-1 bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-200 rounded-md text-sm hover:bg-red-300 dark:hover:bg-red-700 transition-colors">
+                    <i class="ti ti-refresh mr-1"></i> <span data-en="Retry" data-fa="تلاش مجدد" data-ku="هەوڵدانەوە">Retry</span>
+                </button>
+                <button id="try-default-location-btn" class="px-3 py-1 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+                    <i class="ti ti-map-pin mr-1"></i> <span data-en="Try Default Location" data-fa="امتحان مکان پیش‌فرض" data-ku="شوێنی بنەڕەتی تاقی بکەوە">Try Default Location</span>
+                </button>
+            </div>
         </div>
 
         <!-- SEO Content Section (hidden from view but visible to search engines) -->
@@ -380,13 +505,13 @@
     </div>
     
     <!-- Location Name Modal -->
-    <div id="locationNameModal" class="location-name-modal">
+    <div id="locationNameModal" class="location-name-modal" role="dialog" aria-labelledby="locationNameTitle">
         <div class="location-name-content">
-            <h3 class="text-xl font-semibold mb-4" data-en="Name this location" data-fa="نام‌گذاری این مکان" data-ku="ناوی ئەم شوێنە">Name this location</h3>
+            <h3 id="locationNameTitle" class="text-xl font-semibold mb-4" data-en="Name this location" data-fa="نام‌گذاری این مکان" data-ku="ناوی ئەم شوێنە">Name this location</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4" data-en="Give this location a name you'll remember" data-fa="به این مکان نامی بدهید که به خاطر بسپارید" data-ku="ناوێک بدە بەم شوێنە کە لەبیرت بێت">Give this location a name you'll remember</p>
             
             <div class="mb-4">
-                <input type="text" id="customLocationName" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" placeholder="e.g. Home, Work, Favorite Beach...">
+                <input type="text" id="customLocationName" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" placeholder="e.g. Home, Work, Favorite Beach..." aria-label="Custom location name">
             </div>
             
             <div class="flex justify-end gap-2">
@@ -397,12 +522,12 @@
     </div>
     
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 z-50 hidden">
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-labelledby="settingsTitle">
         <div class="absolute inset-0 bg-black bg-opacity-50" id="settings-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Customize Dashboard" data-fa="شخصی‌سازی داشبورد" data-ku="ڕێکخستنی داشبۆرد">Customize Dashboard</h3>
-                <button id="close-settings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <h3 id="settingsTitle" class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Customize Dashboard" data-fa="شخصی‌سازی داشبورد" data-ku="ڕێکخستنی داشبۆرد">Customize Dashboard</h3>
+                <button id="close-settings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" aria-label="Close dialog">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
@@ -455,6 +580,45 @@
                             </label>
                         </div>
                     </div>
+                    
+                    <!-- NEW: Data Refresh Setting -->
+                    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3" data-en="Update Frequency" data-fa="دفعات بروزرسانی" data-ku="چەندبارەی نوێکردنەوە">Update Frequency</h4>
+                        <div class="flex justify-between items-center">
+                            <label for="auto-refresh" class="text-gray-700 dark:text-gray-300" data-en="Auto-refresh weather" data-fa="بروزرسانی خودکار آب و هوا" data-ku="نوێکردنەوەی خۆکاری کەشوهەوا">Auto-refresh weather</label>
+                            <div class="relative inline-block">
+                                <input type="checkbox" id="auto-refresh" class="toggle-checkbox" checked />
+                                <label for="auto-refresh" class="toggle-label">
+                                    <span class="toggle-button"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <label for="refresh-interval" class="block text-sm text-gray-700 dark:text-gray-300 mb-1" data-en="Refresh interval" data-fa="فاصله بروزرسانی" data-ku="ماوەی نوێکردنەوە">Refresh interval</label>
+                            <select id="refresh-interval" class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300">
+                                <option value="300000" data-en="5 minutes" data-fa="۵ دقیقه" data-ku="٥ خولەک">5 minutes</option>
+                                <option value="600000" selected data-en="10 minutes" data-fa="۱۰ دقیقه" data-ku="١٠ خولەک">10 minutes</option>
+                                <option value="1800000" data-en="30 minutes" data-fa="۳۰ دقیقه" data-ku="٣٠ خولەک">30 minutes</option>
+                                <option value="3600000" data-en="1 hour" data-fa="۱ ساعت" data-ku="١ کاتژمێر">1 hour</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Data Saving Mode -->
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <label for="data-saver" class="text-gray-700 dark:text-gray-300" data-en="Data Saver Mode" data-fa="حالت صرفه‌جویی در مصرف داده" data-ku="شێوازی پاشەکەوتی داتا">Data Saver Mode</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" data-en="Reduce data usage and load times" data-fa="کاهش مصرف داده و زمان بارگذاری" data-ku="کەمکردنەوەی بەکارهێنانی داتا و کاتی بارکردن">Reduce data usage and load times</p>
+                            </div>
+                            <div class="relative inline-block">
+                                <input type="checkbox" id="data-saver" class="toggle-checkbox" />
+                                <label for="data-saver" class="toggle-label">
+                                    <span class="toggle-button"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="mt-8 text-right">
@@ -467,12 +631,12 @@
     </div>
     
     <!-- Share Modal -->
-    <div id="share-modal" class="fixed inset-0 z-50 hidden">
+    <div id="share-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-labelledby="shareTitle">
         <div class="absolute inset-0 bg-black bg-opacity-50" id="share-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Share Weather" data-fa="اشتراک‌گذاری آب و هوا" data-ku="هاوبەشکردنی کەشوهەوا">Share Weather</h3>
-                <button id="close-share" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <h3 id="shareTitle" class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Share Weather" data-fa="اشتراک‌گذاری آب و هوا" data-ku="هاوبەشکردنی کەشوهەوا">Share Weather</h3>
+                <button id="close-share" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" aria-label="Close dialog">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
@@ -482,24 +646,40 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-en="Share Link" data-fa="لینک اشتراک‌گذاری" data-ku="بەستەری هاوبەشکردن">Share Link</label>
                     <div class="flex">
-                        <input type="text" id="share-url" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" readonly>
-                        <button id="copy-link" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-opacity-90 transition-colors">
+                        <input type="text" id="share-url" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg text-base focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:text-white" readonly aria-label="Share URL">
+                        <button id="copy-link" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-opacity-90 transition-colors" aria-label="Copy to clipboard">
                             <i class="ti ti-copy"></i>
                         </button>
                     </div>
                 </div>
                 
+                <!-- Share as Image Option (NEW) -->
+                <div class="mb-6">
+                    <button id="share-as-image" class="w-full flex items-center justify-center gap-2 py-2 bg-primary bg-opacity-10 text-primary border border-primary rounded-lg hover:bg-opacity-20 transition-colors">
+                        <i class="ti ti-photo"></i>
+                        <span data-en="Create Shareable Image" data-fa="ایجاد تصویر قابل اشتراک" data-ku="دروستکردنی وێنەی هاوبەشکراو">Create Shareable Image</span>
+                    </button>
+                    <div id="share-image-container" class="hidden mt-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-2">
+                        <div id="weather-image-preview" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden"></div>
+                        <div class="mt-2 flex justify-end">
+                            <button id="download-image" class="px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-opacity-90 transition-colors">
+                                <i class="ti ti-download mr-1"></i> <span data-en="Save Image" data-fa="ذخیره تصویر" data-ku="هەڵگرتنی وێنە">Save Image</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="mt-4 flex justify-center gap-4">
-                    <a href="#" id="share-twitter" class="p-3 bg-[#1DA1F2] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank">
+                    <a href="#" id="share-twitter" class="p-3 bg-[#1DA1F2] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank" aria-label="Share on Twitter">
                         <i class="ti ti-brand-twitter text-xl"></i>
                     </a>
-                    <a href="#" id="share-facebook" class="p-3 bg-[#1877F2] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank">
+                    <a href="#" id="share-facebook" class="p-3 bg-[#1877F2] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank" aria-label="Share on Facebook">
                         <i class="ti ti-brand-facebook text-xl"></i>
                     </a>
-                    <a href="#" id="share-whatsapp" class="p-3 bg-[#25D366] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank">
+                    <a href="#" id="share-whatsapp" class="p-3 bg-[#25D366] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank" aria-label="Share on WhatsApp">
                         <i class="ti ti-brand-whatsapp text-xl"></i>
                     </a>
-                    <a href="#" id="share-telegram" class="p-3 bg-[#0088cc] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank">
+                    <a href="#" id="share-telegram" class="p-3 bg-[#0088cc] text-white rounded-full hover:bg-opacity-90 transition-colors" target="_blank" aria-label="Share on Telegram">
                         <i class="ti ti-brand-telegram text-xl"></i>
                     </a>
                 </div>
@@ -508,12 +688,12 @@
     </div>
     
     <!-- Favorites Management Modal -->
-    <div id="favorites-modal" class="fixed inset-0 z-50 hidden">
+    <div id="favorites-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-labelledby="favoritesTitle">
         <div class="absolute inset-0 bg-black bg-opacity-50" id="favorites-backdrop"></div>
         <div class="relative max-w-md mx-auto mt-20 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Manage Favorites" data-fa="مدیریت علاقه‌مندی‌ها" data-ku="بەڕێوەبردنی دڵخوازەکان">Manage Favorites</h3>
-                <button id="close-favorites" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <h3 id="favoritesTitle" class="text-xl font-semibold text-gray-800 dark:text-white" data-en="Manage Favorites" data-fa="مدیریت علاقه‌مندی‌ها" data-ku="بەڕێوەبردنی دڵخوازەکان">Manage Favorites</h3>
+                <button id="close-favorites" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" aria-label="Close dialog">
                     <i class="ti ti-x text-xl"></i>
                 </button>
             </div>
@@ -523,7 +703,7 @@
                     <p data-en="No favorite locations yet" data-fa="هنوز مکان مورد علاقه‌ای ثبت نشده است" data-ku="هێشتا هیچ شوێنێکی دڵخواز تۆمار نەکراوە">No favorite locations yet</p>
                 </div>
                 
-                <ul id="favorites-management-list" class="divide-y divide-gray-200 dark:divide-gray-700"></ul>
+                <ul id="favorites-management-list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[50vh] overflow-y-auto"></ul>
                 
                 <div class="mt-6 text-right">
                     <button id="done-favorites" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors" data-en="Done" data-fa="انجام شد" data-ku="تەواو">
@@ -535,14 +715,34 @@
     </div>
     
     <!-- Toast for location services -->
-    <div id="location-toast" class="toast hidden">
+    <div id="location-toast" class="toast hidden" role="alert" aria-live="polite">
         <i class="ti ti-map-pin text-xl"></i>
         <span id="toast-message"></span>
+    </div>
+    
+    <!-- Image Export (Hidden Canvas) -->
+    <div class="hidden">
+        <canvas id="share-canvas" width="600" height="800"></canvas>
     </div>
 
     <!-- Import JavaScript files -->
     <script src="weather-data.js"></script>
     <script src="ui-handlers.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
