@@ -1,8 +1,70 @@
 // app.js - Main application file that initializes everything
 
+// Enhanced Storage Utility
+const storageUtil = {
+    data: {},
+    
+    setItem: function(key, value) {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(key, JSON.stringify(value));
+            } else {
+                this.data[key] = value;
+                sessionStorage.setItem(key, JSON.stringify(value));
+            }
+        } catch (err) {
+            console.error("Storage error (set):", err);
+            try {
+                sessionStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                this.data[key] = value;
+            }
+        }
+    },
+    
+    getItem: function(key) {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : null;
+            } else {
+                const item = sessionStorage.getItem(key);
+                return item ? JSON.parse(item) : this.data[key] || null;
+            }
+        } catch (err) {
+            console.error("Storage error (get):", err);
+            try {
+                const item = sessionStorage.getItem(key);
+                return item ? JSON.parse(item) : this.data[key] || null;
+            } catch (e) {
+                return this.data[key] || null;
+            }
+        }
+    },
+    
+    removeItem: function(key) {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem(key);
+            } else {
+                sessionStorage.removeItem(key);
+            }
+            delete this.data[key];
+        } catch (err) {
+            console.error("Storage error (remove):", err);
+            try {
+                sessionStorage.removeItem(key);
+            } catch (e) {
+                delete this.data[key];
+            }
+        }
+    }
+};
+
 // Global state
 window.currentLanguage = 'en';
 window.useMetric = true;
+window.currentRefreshInterval = null;
 window.userPreferences = {
     showHourly: true,
     showDetails: true,
@@ -13,27 +75,81 @@ window.userPreferences = {
     language: 'en',
     favorites: [],
     customLocationNames: {},
-    dismissedAlerts: []
+    dismissedAlerts: [],
+    recentSearches: [],
+    autoRefresh: true,
+    refreshInterval: 600000, // 10 minutes
+    dataSaver: false
 };
 
-// Detect if running in WebView with improved detection
+// Improved WebView detection
 window.isWebView = (function() {
     // Various ways to detect WebView
     const userAgent = navigator.userAgent.toLowerCase();
     console.log("User Agent:", userAgent); // Debug user agent
     
-    // More comprehensive WebView detection
-    return userAgent.indexOf('wv') > -1 || // Android WebView
+    // Feature detection for WebView
+    const hasLimitedFeatures = !window.opener && document.referrer === '';
+    
+    // More comprehensive WebView detection combining user agent and features
+    return hasLimitedFeatures || 
+           userAgent.indexOf('wv') > -1 || // Android WebView
            userAgent.indexOf('flutter') > -1 || // Flutter WebView
            /android.+webview|wv/.test(userAgent) || // More generic Android WebView
            window.navigator.standalone || // iOS standalone mode (from homescreen)
            window.matchMedia('(display-mode: standalone)').matches;
 })();
 
-// Initialize application
+// Network status detection
+let isOnline = navigator.onLine;
+
+// Detect network status changes
+window.addEventListener('online', () => {
+    isOnline = true;
+    document.getElementById('offline-alert').classList.add('hidden');
+    
+    // Refresh weather data if needed
+    if (currentLocationData && currentLocationData.latitude && currentLocationData.longitude) {
+        getWeatherByCoordinates(currentLocationData.latitude, currentLocationData.longitude, currentLocationData.displayName, true);
+    }
+});
+
+window.addEventListener('offline', () => {
+    isOnline = false;
+    document.getElementById('offline-alert').classList.remove('hidden');
+    
+    // Show a toast notification
+    showToast(window.currentLanguage === 'en' ? 
+        "You're offline. Using cached data." : 
+        window.currentLanguage === 'fa' ?
+        "شما آفلاین هستید. از داده‌های ذخیره شده استفاده می‌شود." :
+        "تۆ ئۆفلاینیت. داتای خەزنکراو بەکاردەهێنرێت.", 5000);
+});
+
+// Input sanitization utility
+function sanitizeInput(input) {
+    if (!input || typeof input !== 'string') return '';
+    return input.replace(/[<>&"'`]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '`': '&#x60;'
+        }[match];
+    });
+}
+
+// Improved application initialization
 async function initApp() {
     console.log("Initializing app...");
     console.log("WebView detected:", window.isWebView);
+    
+    // Check network status first
+    if (!navigator.onLine) {
+        document.getElementById('offline-alert').classList.remove('hidden');
+    }
     
     // Add meta tag for WebView if needed
     if (window.isWebView) {
@@ -43,24 +159,63 @@ async function initApp() {
     // Load user preferences
     loadUserPreferences();
     
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Apply preferences to UI
-    applyUserPreferences();
-    
-    // Set up language selector
+    // Set up essential UI elements first
     setupLanguageSelector();
     
-    // Detect if user is in Iran by checking connection to OpenWeatherMap
-    await checkRegion();
+    // Apply preferences to UI in the next tick
+    setTimeout(() => {
+        applyUserPreferences();
+    }, 0);
     
-    // Check for location permission parameters
-    checkLocationPermissionParameters();
+    // Set up event listeners (non-blocking)
+    setTimeout(() => {
+        setupEventListeners();
+    }, 10);
+    
+    // Check for region and location in parallel
+    const promises = [
+        checkRegion(),
+        new Promise(resolve => {
+            // Wait a moment before checking location parameters
+            setTimeout(() => {
+                checkLocationPermissionParameters();
+                resolve();
+            }, 100);
+        })
+    ];
+    
+    // Wait for crucial initialization steps
+    await Promise.all(promises);
     
     // For WebView, display a special message about location permissions
     if (window.isWebView) {
-        showWebViewLocationHelp();
+        setTimeout(() => {
+            showWebViewLocationHelp();
+        }, 500);
+    }
+    
+    // Set up refresh timer if enabled
+    setupAutoRefresh();
+}
+
+// Set up auto-refresh timer
+function setupAutoRefresh() {
+    if (window.currentRefreshInterval) {
+        clearInterval(window.currentRefreshInterval);
+    }
+    
+    if (window.userPreferences.autoRefresh) {
+        window.currentRefreshInterval = setInterval(() => {
+            if (isOnline && currentLocationData && currentLocationData.latitude && currentLocationData.longitude) {
+                console.log("Auto refreshing weather data...");
+                getWeatherByCoordinates(
+                    currentLocationData.latitude, 
+                    currentLocationData.longitude, 
+                    currentLocationData.displayName,
+                    true // Silent update
+                );
+            }
+        }, window.userPreferences.refreshInterval);
     }
 }
 
@@ -70,13 +225,32 @@ function addWebViewMetaTags() {
     meta.name = 'viewport';
     meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
     document.getElementsByTagName('head')[0].appendChild(meta);
+    
+    // Disable pull-to-refresh
+    const style = document.createElement('style');
+    style.textContent = `
+        html, body {
+            overscroll-behavior-y: contain;
+            overflow: hidden;
+            height: 100%;
+        }
+        body {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Show WebView location help
 function showWebViewLocationHelp() {
     // Create a helper button for location permissions
+    if (document.getElementById('webview-location-helper')) return;
+    
     const locationHelper = document.createElement('div');
-    locationHelper.className = 'fixed bottom-4 right-4 bg-primary text-white p-3 rounded-full shadow-lg z-50';
+    locationHelper.id = 'webview-location-helper';
+    locationHelper.className = 'fixed bottom-4 right-4 bg-primary text-white p-3 rounded-full shadow-lg z-50 flex items-center justify-center';
+    locationHelper.setAttribute('aria-label', 'Use current location');
     locationHelper.innerHTML = '<i class="ti ti-location"></i>';
     locationHelper.addEventListener('click', function() {
         showToast(window.currentLanguage === 'en' ? 
@@ -89,39 +263,76 @@ function showWebViewLocationHelp() {
     document.body.appendChild(locationHelper);
 }
 
-// Save user preferences to sessionStorage
+// Enhanced storage for user preferences
 function saveUserPreferences() {
     try {
+        // Update live preferences
         window.userPreferences.useMetric = window.useMetric;
         window.userPreferences.language = window.currentLanguage;
-        window.sessionStorage.setItem('skyweatherPrefs', JSON.stringify(window.userPreferences));
+        
+        // Trim recent searches to max 10
+        if (window.userPreferences.recentSearches.length > 10) {
+            window.userPreferences.recentSearches = window.userPreferences.recentSearches.slice(0, 10);
+        }
+        
+        // Save to storage
+        storageUtil.setItem('skyweatherPrefs', window.userPreferences);
     } catch (err) {
         console.error("Error saving preferences:", err);
     }
 }
 
-// Load user preferences from sessionStorage
+// Load user preferences from storage
 function loadUserPreferences() {
     try {
-        const savedPreferences = window.sessionStorage.getItem('skyweatherPrefs');
+        const savedPreferences = storageUtil.getItem('skyweatherPrefs');
         if (savedPreferences) {
-            const parsedPrefs = JSON.parse(savedPreferences);
-            Object.assign(window.userPreferences, parsedPrefs);
+            // Apply saved preferences, keeping defaults where none exist
+            window.userPreferences = {
+                ...window.userPreferences,
+                ...savedPreferences
+            };
+            
+            // Apply to global settings
             window.useMetric = window.userPreferences.useMetric;
             window.currentLanguage = window.userPreferences.language || 'en';
             
-            // Initialize custom location names if needed
+            // Initialize collections if needed
             if (!window.userPreferences.customLocationNames) {
                 window.userPreferences.customLocationNames = {};
             }
             
-            // Initialize dismissed alerts if needed
             if (!window.userPreferences.dismissedAlerts) {
                 window.userPreferences.dismissedAlerts = [];
+            }
+            
+            if (!window.userPreferences.recentSearches) {
+                window.userPreferences.recentSearches = [];
             }
         }
     } catch (err) {
         console.error("Error loading preferences:", err);
+        
+        // Reset to defaults
+        window.userPreferences = {
+            showHourly: true,
+            showDetails: true,
+            showChart: true,
+            showAlerts: true,
+            showHistorical: true,
+            useMetric: true,
+            language: 'en',
+            favorites: [],
+            customLocationNames: {},
+            dismissedAlerts: [],
+            recentSearches: [],
+            autoRefresh: true,
+            refreshInterval: 600000,
+            dataSaver: false
+        };
+        
+        window.useMetric = true;
+        window.currentLanguage = 'en';
     }
 }
 
@@ -137,6 +348,21 @@ function applyUserPreferences() {
     document.getElementById('show-alerts').checked = window.userPreferences.showAlerts;
     document.getElementById('show-historical').checked = window.userPreferences.showHistorical;
     
+    // Apply new settings
+    document.getElementById('auto-refresh').checked = window.userPreferences.autoRefresh;
+    document.getElementById('data-saver').checked = window.userPreferences.dataSaver;
+    
+    // Set refresh interval in dropdown
+    const refreshIntervalSelect = document.getElementById('refresh-interval');
+    if (refreshIntervalSelect) {
+        for (let i = 0; i < refreshIntervalSelect.options.length; i++) {
+            if (parseInt(refreshIntervalSelect.options[i].value) === window.userPreferences.refreshInterval) {
+                refreshIntervalSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
     // Apply language preference
     setLanguage(window.userPreferences.language || 'en');
     
@@ -146,10 +372,16 @@ function applyUserPreferences() {
         document.getElementById('favorites-container').classList.remove('hidden');
     }
     
+    // Load recent searches
+    renderRecentSearches();
+    
     // If weather data is loaded, update the display with the current unit preference
     if (currentWeatherData && currentLocationData) {
         displayWeatherData(currentWeatherData, currentLocationData.displayName);
     }
+    
+    // Setup auto-refresh timer
+    setupAutoRefresh();
 }
 
 // Set up event listeners
@@ -192,6 +424,10 @@ function setupEventListeners() {
         document.getElementById('share-modal').classList.add('hidden'));
     document.getElementById('copy-link').addEventListener('click', copyShareLink);
     
+    // Share as image (new)
+    document.getElementById('share-as-image').addEventListener('click', createShareableImage);
+    document.getElementById('download-image').addEventListener('click', downloadShareImage);
+    
     // Location name modal
     document.getElementById('rename-location').addEventListener('click', showLocationNameModal);
     document.getElementById('saveLocationName').addEventListener('click', saveCustomLocationName);
@@ -209,17 +445,38 @@ function setupEventListeners() {
     document.getElementById('done-favorites').addEventListener('click', () => 
         document.getElementById('favorites-modal').classList.add('hidden'));
     
-    // Location input for autocomplete
-    document.getElementById('locationInput').addEventListener('input', handleLocationInput);
-    document.getElementById('locationInput').addEventListener('keydown', handleAutocompleteKeydown);
+    // Error buttons
+    document.getElementById('retry-btn').addEventListener('click', handleRetry);
+    document.getElementById('try-default-location-btn').addEventListener('click', () => {
+        getWeatherByLocationName('New York');
+    });
+    
+    // Chart type toggles (new)
+    document.getElementById('chart-temp-btn').addEventListener('click', () => switchChartType('temperature'));
+    document.getElementById('chart-precip-btn').addEventListener('click', () => switchChartType('precipitation'));
+    
+    // Location input for autocomplete with debounce
+    const locationInput = document.getElementById('locationInput');
+    locationInput.addEventListener('input', debounce(handleLocationInput, 300));
+    locationInput.addEventListener('keydown', handleAutocompleteKeydown);
     
     // Close autocomplete on click outside
     document.addEventListener('click', function(e) {
         const autocompleteList = document.getElementById('autocomplete-list');
-        const locationInput = document.getElementById('locationInput');
         if (!autocompleteList.contains(e.target) && e.target !== locationInput) {
             autocompleteList.innerHTML = '';
             autocompleteList.classList.remove('show');
+        }
+    });
+    
+    // Keyboard accessibility for modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Close all modals on ESC
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('favorites-modal').classList.add('hidden');
+            document.getElementById('locationNameModal').classList.remove('show');
         }
     });
     
@@ -233,6 +490,11 @@ function setupEventListeners() {
         } else {
             document.documentElement.classList.remove('dark');
         }
+        
+        // Rebuild chart with new colors if it exists
+        if (currentWeatherData && currentWeatherData.daily) {
+            createWeatherChart(currentWeatherData.daily);
+        }
     });
 }
 
@@ -242,9 +504,18 @@ function setupLanguageSelector() {
     updateLanguageSelector(window.currentLanguage);
     
     // Set up language selector click handler
-    document.getElementById('lang-selector').addEventListener('click', function(e) {
+    const langSelector = document.getElementById('lang-selector');
+    langSelector.addEventListener('click', function(e) {
         e.stopPropagation();
         document.getElementById('lang-options').classList.toggle('show');
+    });
+    
+    // Keyboard support for language selector
+    langSelector.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            document.getElementById('lang-options').classList.toggle('show');
+        }
     });
     
     // Set up language option click handlers
@@ -254,6 +525,16 @@ function setupLanguageSelector() {
             const lang = this.getAttribute('data-lang');
             setLanguage(lang);
             document.getElementById('lang-options').classList.remove('show');
+        });
+        
+        // Keyboard support for language options
+        option.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                setLanguage(lang);
+                document.getElementById('lang-options').classList.remove('show');
+            }
         });
     });
     
@@ -268,12 +549,14 @@ function updateLanguageSelector(lang) {
     document.querySelectorAll('.lang-option').forEach(option => {
         if (option.getAttribute('data-lang') === lang) {
             option.classList.add('active');
+            option.setAttribute('aria-selected', 'true');
             const flagImg = option.querySelector('img').src;
             const langName = lang.toUpperCase();
             document.getElementById('current-lang-flag').src = flagImg;
             document.getElementById('current-lang-name').textContent = langName;
         } else {
             option.classList.remove('active');
+            option.setAttribute('aria-selected', 'false');
         }
     });
 }
@@ -290,29 +573,172 @@ function setLanguage(lang) {
     // Set RTL for Persian and Kurdish
     if (lang === 'fa' || lang === 'ku') {
         document.body.setAttribute('dir', 'rtl');
+        document.documentElement.style.direction = 'rtl';
     } else {
         document.body.setAttribute('dir', 'ltr');
+        document.documentElement.style.direction = 'ltr';
     }
     
     // Update all translatable UI elements
-    document.querySelectorAll('[data-' + lang + ']').forEach(element => {
-        const translation = element.getAttribute('data-' + lang);
+    document.querySelectorAll(`[data-${lang}]`).forEach(element => {
+        const translation = element.getAttribute(`data-${lang}`);
         if (translation) {
             element.textContent = translation;
         }
     });
     
     // Update placeholder for search input
-    const placeholderAttr = 'data-placeholder-' + lang;
+    const placeholderAttr = `data-placeholder-${lang}`;
     const locationInput = document.getElementById('locationInput');
     if (locationInput.hasAttribute(placeholderAttr)) {
         locationInput.placeholder = locationInput.getAttribute(placeholderAttr);
     }
     
+    // Update dropdown options
+    document.querySelectorAll('select').forEach(select => {
+        Array.from(select.options).forEach(option => {
+            const optionTranslation = option.getAttribute(`data-${lang}`);
+            if (optionTranslation) {
+                option.textContent = optionTranslation;
+            }
+        });
+    });
+    
     // Update weather descriptions if weather data is loaded
     if (currentWeatherData && currentLocationData) {
         displayWeatherData(currentWeatherData, currentLocationData.displayName);
     }
+    
+    // Update error messages if visible
+    const errorContainer = document.getElementById('errorContainer');
+    if (!errorContainer.classList.contains('hidden') && lastError) {
+        showError(getLocalizedErrorMessage(lastError.code || 'unknown', lastError.message));
+    }
+}
+
+// Track the last error for retries
+let lastError = null;
+
+// Get localized error message
+function getLocalizedErrorMessage(errorCode, fallbackMessage) {
+    const errorMessages = {
+        'network_error': {
+            'en': "Network connection issue. Please check your connection and try again.",
+            'fa': "مشکل اتصال به شبکه. لطفاً اتصال خود را بررسی کرده و دوباره امتحان کنید.",
+            'ku': "کێشەی پەیوەندی تۆڕ. تکایە پەیوەندیەکەت بپشکنە و دووبارە هەوڵ بدەوە."
+        },
+        'location_not_found': {
+            'en': "Location not found. Please try a different location.",
+            'fa': "مکان پیدا نشد. لطفاً مکان دیگری را امتحان کنید.",
+            'ku': "شوێن نەدۆزرایەوە. تکایە شوێنێکی جیاواز تاقی بکەوە."
+        },
+        'permission_denied': {
+            'en': "Location access denied. Please enable location in your device settings.",
+            'fa': "دسترسی به موقعیت رد شد. لطفاً مکان‌یابی را در تنظیمات دستگاه خود فعال کنید.",
+            'ku': "دەستگەیشتن بە شوێن ڕەتکرایەوە. تکایە شوێن لە ڕێکخستنەکانی ئامێرەکەت چالاک بکە."
+        },
+        'position_unavailable': {
+            'en': "Location information is unavailable. Please check your device settings.",
+            'fa': "اطلاعات موقعیت در دسترس نیست. لطفاً تنظیمات دستگاه خود را بررسی کنید.",
+            'ku': "زانیاری شوێن بەردەست نییە. تکایە ڕێکخستنەکانی ئامێرەکەت بپشکنە."
+        },
+        'timeout': {
+            'en': "Location request timed out. Please try again.",
+            'fa': "درخواست موقعیت به پایان رسید. لطفا دوباره تلاش کنید.",
+            'ku': "داواکاری شوێن کاتی بەسەرچوو. تکایە دووبارە هەوڵ بدەوە."
+        },
+        'weather_api_error': {
+            'en': "Error fetching weather data. Please try again later.",
+            'fa': "خطا در دریافت اطلاعات آب و هوا. لطفاً بعداً دوباره امتحان کنید.",
+            'ku': "هەڵە لە هێنانی زانیاری کەشوهەوا. تکایە دواتر هەوڵ بدەوە."
+        },
+        'unknown': {
+            'en': "An unknown error occurred. Please try again.",
+            'fa': "خطای ناشناخته رخ داد. لطفاً دوباره امتحان کنید.",
+            'ku': "هەڵەیەکی نەناسراو ڕوویدا. تکایە دووبارە هەوڵ بدەوە."
+        }
+    };
+    
+    if (errorMessages[errorCode] && errorMessages[errorCode][window.currentLanguage]) {
+        return errorMessages[errorCode][window.currentLanguage];
+    }
+    
+    return fallbackMessage || errorMessages.unknown[window.currentLanguage];
+}
+
+// Handle retry button click
+function handleRetry() {
+    if (!lastError || !lastError.retry) {
+        // Default retry - go to New York
+        getWeatherByLocationName('New York');
+        return;
+    }
+    
+    // Call the stored retry function with arguments
+    lastError.retry(...(lastError.args || []));
+}
+
+// Add to recent searches
+function addToRecentSearches(location) {
+    if (!location) return;
+    
+    // Don't add duplicates
+    const existingIndex = window.userPreferences.recentSearches.findIndex(
+        item => item.name === location.name
+    );
+    
+    if (existingIndex !== -1) {
+        // Remove existing entry to move it to top
+        window.userPreferences.recentSearches.splice(existingIndex, 1);
+    }
+    
+    // Add to beginning of array
+    window.userPreferences.recentSearches.unshift(location);
+    
+    // Limit to 10 entries
+    if (window.userPreferences.recentSearches.length > 10) {
+        window.userPreferences.recentSearches = window.userPreferences.recentSearches.slice(0, 10);
+    }
+    
+    // Save preferences
+    saveUserPreferences();
+    
+    // Update UI
+    renderRecentSearches();
+}
+
+// Render recent searches
+function renderRecentSearches() {
+    const recentSearchesList = document.getElementById('recent-searches-list');
+    const recentSearchesContainer = document.getElementById('recent-searches');
+    
+    if (!recentSearchesList || !window.userPreferences.recentSearches || window.userPreferences.recentSearches.length === 0) {
+        if (recentSearchesContainer) {
+            recentSearchesContainer.classList.add('hidden');
+        }
+        return;
+    }
+    
+    recentSearchesList.innerHTML = '';
+    recentSearchesContainer.classList.remove('hidden');
+    
+    window.userPreferences.recentSearches.slice(0, 5).forEach(location => {
+        const button = document.createElement('button');
+        button.className = 'recent-search-item px-3 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full text-sm text-gray-800 dark:text-white transition-colors flex items-center gap-1';
+        button.innerHTML = `
+            <i class="ti ti-history text-xs"></i>
+            <span>${sanitizeInput(location.displayName || location.name)}</span>
+        `;
+        button.addEventListener('click', () => {
+            if (location.latitude && location.longitude) {
+                getWeatherByCoordinates(location.latitude, location.longitude, location.displayName || location.name);
+            } else {
+                getWeatherByLocationName(location.name);
+            }
+        });
+        
+        recentSearchesList.appendChild(button);
+    });
 }
 
 // Check URL parameters for location permission
@@ -462,6 +888,16 @@ function getUserLocation(fromMapButton = false, forceRequest = false) {
                     console.log("Error code:", error.code);
                     console.log("Error message:", error.message);
                     
+                    // Track error for retry
+                    lastError = {
+                        code: error.code === 1 ? 'permission_denied' : 
+                              error.code === 2 ? 'position_unavailable' : 
+                              error.code === 3 ? 'timeout' : 'unknown',
+                        message: error.message,
+                        retry: getUserLocation,
+                        args: [fromMapButton, forceRequest]
+                    };
+                    
                     // More detailed error logging for WebView
                     if (window.isWebView) {
                         console.log("WebView geolocation error details:", JSON.stringify({
@@ -578,14 +1014,31 @@ async function getWeatherByLocationName(locationName) {
         "در حال یافتن مکان..." :
         "شوێن دەدۆزرێتەوە...";
     
-    showLoading(loadingMsg);
+    // Show skeleton loader in data saver mode, otherwise show regular loader
+    if (window.userPreferences.dataSaver) {
+        document.getElementById('skeleton-loader').classList.remove('hidden');
+    } else {
+        showLoading(loadingMsg);
+    }
     
     try {
+        // Sanitize input
+        locationName = sanitizeInput(locationName);
+        
         // Get coordinates from location name
         const locationData = await getCoordinates(locationName);
         
         // Save current location data
         currentLocationData = locationData;
+        
+        // Add to recent searches
+        addToRecentSearches({
+            name: locationData.name,
+            displayName: locationData.displayName,
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+            country: locationData.country
+        });
         
         const weatherLoadingMsg = window.currentLanguage === 'en' ? 
             "Getting weather data..." : 
@@ -593,10 +1046,12 @@ async function getWeatherByLocationName(locationName) {
             "در حال دریافت داده‌های آب و هوا..." :
             "زانیارییەکانی کەشوهەوا دەهێنرێت...";
         
-        showLoading(weatherLoadingMsg);
+        if (!window.userPreferences.dataSaver) {
+            showLoading(weatherLoadingMsg);
+        }
         
         // Get weather data
-        const weatherData = await fetchWeatherData(
+        const weatherData = await fetchWeatherDataWithCache(
             locationData.latitude, 
             locationData.longitude
         );
@@ -604,6 +1059,7 @@ async function getWeatherByLocationName(locationName) {
         // Display the weather
         displayWeatherData(weatherData, locationData.displayName);
         hideLoading();
+        document.getElementById('skeleton-loader').classList.add('hidden');
         
         // Update map if it exists
         if (map) {
@@ -615,20 +1071,40 @@ async function getWeatherByLocationName(locationName) {
             }
             marker = L.marker([locationData.latitude, locationData.longitude]).addTo(map);
         }
+        
+        // Clear last error
+        lastError = null;
     } catch (err) {
-        showError(err.message);
+        console.error("Error getting location weather:", err);
+        
+        // Track error for retry
+        lastError = {
+            code: err.code || 'location_not_found',
+            message: err.message,
+            retry: getWeatherByLocationName,
+            args: [locationName]
+        };
+        
+        showError(getLocalizedErrorMessage(lastError.code, err.message));
+        document.getElementById('skeleton-loader').classList.add('hidden');
     }
 }
 
 // Get weather for coordinates
-async function getWeatherByCoordinates(latitude, longitude, displayName) {
+async function getWeatherByCoordinates(latitude, longitude, displayName, silentUpdate = false) {
     const loadingMsg = window.currentLanguage === 'en' ? 
         "Getting weather data..." : 
         window.currentLanguage === 'fa' ?
         "در حال دریافت داده‌های آب و هوا..." :
         "زانیارییەکانی کەشوهەوا دەهێنرێت...";
     
-    showLoading(loadingMsg);
+    if (!silentUpdate) {
+        if (window.userPreferences.dataSaver) {
+            document.getElementById('skeleton-loader').classList.remove('hidden');
+        } else {
+            showLoading(loadingMsg);
+        }
+    }
     
     try {
         // Check for custom name
@@ -642,23 +1118,123 @@ async function getWeatherByCoordinates(latitude, longitude, displayName) {
             displayName: customName || displayName || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`
         };
         
+        // Add to recent searches
+        addToRecentSearches({
+            name: currentLocationData.displayName,
+            displayName: currentLocationData.displayName,
+            latitude: latitude,
+            longitude: longitude
+        });
+        
         // Try to get location name if it's coordinates-based
-        if (displayName.includes('°') && !customName) {
+        if (displayName && displayName.includes('°') && !customName && !silentUpdate) {
             const locationName = await getReverseGeocode(latitude, longitude);
             if (locationName) {
                 currentLocationData.displayName = locationName;
             }
         }
         
-        // Get weather data
-        const weatherData = await fetchWeatherData(latitude, longitude);
+        // Get weather data with caching
+        const weatherData = await fetchWeatherDataWithCache(latitude, longitude);
         
-        // Display the weather
-        displayWeatherData(weatherData, currentLocationData.displayName);
-        hideLoading();
+        // If this is a silent update (from auto-refresh), update timestamp only
+        if (silentUpdate && currentWeatherData) {
+            // Update only the timestamp
+            document.getElementById('update-time').textContent = new Date().toLocaleTimeString(
+                window.currentLanguage === 'en' ? 'en-US' : 
+                window.currentLanguage === 'fa' ? 'fa-IR' : 'ku', 
+                { hour: '2-digit', minute: '2-digit' }
+            );
+            
+            // Check for significant changes in weather conditions
+            const previousTemp = currentWeatherData.current.temperature_2m;
+            const newTemp = weatherData.current.temperature_2m;
+            const tempDiff = Math.abs(previousTemp - newTemp);
+            
+            const previousCode = currentWeatherData.current.weather_code;
+            const newCode = weatherData.current.weather_code;
+            
+            // If significant changes, update the full display
+            if (tempDiff >= 2 || previousCode !== newCode) {
+                currentWeatherData = weatherData;
+                displayWeatherData(weatherData, currentLocationData.displayName, true);
+            } else {
+                // Minor update only
+                currentWeatherData = weatherData;
+                
+                // Just update current temperature and time without full redraw
+                updateCurrentConditions(weatherData);
+            }
+        } else {
+            // Normal update - display all weather data
+            displayWeatherData(weatherData, currentLocationData.displayName);
+            if (!silentUpdate) {
+                hideLoading();
+                document.getElementById('skeleton-loader').classList.add('hidden');
+            }
+        }
+        
+        // Clear last error
+        lastError = null;
     } catch (err) {
-        showError(err.message);
+        console.error("Error getting coordinate weather:", err);
+        
+        // Don't show error for silent updates
+        if (!silentUpdate) {
+            // Track error for retry
+            lastError = {
+                code: err.code || 'weather_api_error',
+                message: err.message,
+                retry: getWeatherByCoordinates,
+                args: [latitude, longitude, displayName, false]
+            };
+            
+            showError(getLocalizedErrorMessage(lastError.code, err.message));
+            document.getElementById('skeleton-loader').classList.add('hidden');
+        }
     }
+}
+
+// Minor update for current conditions only (for silent updates)
+function updateCurrentConditions(data) {
+    if (!data || !data.current) return;
+    
+    // Update temperature
+    const temperature = document.getElementById('temperature');
+    if (temperature) {
+        temperature.textContent = formatTemperature(data.current.temperature_2m, window.useMetric);
+    }
+    
+    // Update feels like
+    const feelsLike = document.getElementById('feelsLike');
+    if (feelsLike) {
+        feelsLike.textContent = formatTemperature(data.current.apparent_temperature || data.current.temperature_2m, window.useMetric);
+    }
+    
+    // Update humidity
+    const humidity = document.getElementById('humidity');
+    if (humidity) {
+        humidity.textContent = `${data.current.relative_humidity_2m}%`;
+    }
+    
+    // Update wind
+    const wind = document.getElementById('wind');
+    if (wind) {
+        wind.textContent = formatWind(data.current.wind_speed_10m, data.current.wind_direction_10m, window.useMetric, window.currentLanguage);
+    }
+    
+    // Update wind compass
+    updateWindCompass(data.current.wind_direction_10m);
+}
+
+// Helper function: Debounce
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
 }
 
 // Initialize app when DOM is loaded
